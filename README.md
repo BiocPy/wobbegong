@@ -1,5 +1,5 @@
 [![PyPI-Server](https://img.shields.io/pypi/v/wobbegong.svg)](https://pypi.org/project/wobbegong/)
-![Unit tests](https://github.com/YOUR_ORG_OR_USERNAME/wobbegong/actions/workflows/run-tests.yml/badge.svg)
+![Unit tests](https://github.com/BiocPy/wobbegong/actions/workflows/run-tests.yml/badge.svg)
 
 # wobbegong
 
