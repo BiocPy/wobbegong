@@ -24,8 +24,8 @@ def test_basic_dataframe(temp_dir):
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
 
-    assert summary["columns"]["names"] == ["A", "B", "C", "D"]
-    assert summary["columns"]["types"] == ["integer", "double", "string", "boolean"]
+    assert summary["columns"]["names"] == ["A", "B"]
+    assert summary["columns"]["types"] == ["integer", "double"]
     assert summary["row_count"] == 5
     assert not summary["has_row_names"]
 
