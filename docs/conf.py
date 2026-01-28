@@ -302,3 +302,47 @@ intersphinx_mapping = {
 }
 
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)
+
+# -- Biocsetup configuration -------------------------------------------------
+
+# Enable execution of code chunks in markdown
+extensions.remove('myst_parser')
+extensions.append('myst_nb')
+
+# Less verbose api documentation
+extensions.append('sphinx_autodoc_typehints')
+
+# Add sphinx-multiversion
+extensions.append('sphinx_multiversion')
+
+autodoc_default_options = {
+    "special-members": True,
+    "undoc-members": True,
+    "exclude-members": "__weakref__, __dict__, __str__, __module__",
+}
+
+autosummary_generate = True
+autosummary_imported_members = True
+
+html_theme = "furo"
+
+# -- Options for sphinx-multiversion -----------------------------------------
+# Based on: https://sphinx-multiversion.readthedocs.io/en/latest/configuration.html
+#
+# This adds a version switcher dropdown to the Furo theme's sidebar.
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/scroll-start.html",
+        "sidebar/navigation.html",
+        "sidebar/versioning.html",
+        "sidebar/scroll-end.html",
+    ]
+}
+
+smv_version_dropdown = True
+smv_tag_whitelist = r'^v.*$'            # Build docs for tags starting with 'v' (e.g. v1.0.0)
+smv_branch_whitelist = r'^(main|master)$' # Build docs for main/master branches
+smv_remote_whitelist = r'^origin$'      # Only look at the 'origin' remote
+smv_prefer_remote_refs = False

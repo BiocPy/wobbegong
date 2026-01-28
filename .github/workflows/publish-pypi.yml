@@ -1,0 +1,92 @@
+name: Publish to PyPI and Docs
+
+on:
+  push:
+    tags:
+      - "*"
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pages: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      # --- PyPI Publish Steps (Only on Tag Push) ---
+
+      - name: Install dependencies (for PyPI build)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          python -m pip install --upgrade pip
+          pip install tox
+
+      - name: Test and Build
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tox
+          python -m tox -e clean,build
+
+      - name: Publish to PyPI
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      # --- Documentation Build Steps ---
+      # This will run on all triggers (tags, main, master, dispatch)
+
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements.txt
+
+      - name: Download existing docs
+        # Check out the existing gh-pages branch into the build directory
+        # This preserves all old, versioned documentation
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: docs/_build/html
+
+      - name: Set version whitelists for delta build
+        # We only build the current ref (tag or branch)
+        # This dynamically overrides the settings in conf.py
+        # and speeds up the build.
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "Building docs for tag: ${{ github.ref_name }}"
+            echo "SMV_TAG_WHITELIST=^${{ github.ref_name }}$" >> $GITHUB_ENV
+            echo "SMV_BRANCH_WHITELIST=^$" >> $GITHUB_ENV # Don't build any branches
+          else
+            echo "Building docs for branch: ${{ github.ref_name }}"
+            echo "SMV_TAG_WHITELIST=^$" >> $GITHUB_ENV # Don't build any tags
+            echo "SMV_BRANCH_WHITELIST=^${{ github.ref_name }}$" >> $GITHUB_ENV
+          fi
+
+      - name: Build new/updated docs
+        run: |
+          sphinx-multiversion docs docs/_build/html
+
+      - name: Create .nojekyll
+        run: touch ./docs/_build/html/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: ./docs/_build/html
+          clean: false

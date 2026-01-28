@@ -4,3 +4,7 @@
 # sphinx_rtd_theme
 myst-parser[linkify]
 sphinx>=3.2.1
+myst-nb
+furo
+sphinx-autodoc-typehints
+sphinx-multiversion
