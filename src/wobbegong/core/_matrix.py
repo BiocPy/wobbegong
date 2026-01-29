@@ -12,7 +12,7 @@ __copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
 
 
-def _wobbegongify_matrix(x, path: str):
+def wobbegongify_matrix(x, path: str):
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -51,14 +51,14 @@ def _wobbegongify_matrix(x, path: str):
 
 @wobbegongify.register(np.ndarray)
 def _(x, path):
-    _wobbegongify_matrix(x, path)
+    wobbegongify_matrix(x, path)
 
 
 # @wobbegongify.register(sparse.spmatrix)
 # def _(x, path):
-#     _wobbegongify_matrix(x, path)
+#     wobbegongify_matrix(x, path)
 
 
 # @wobbegongify.register(DelayedArray)
 # def _(x, path):
-#     _wobbegongify_matrix(x, path)
+#     wobbegongify_matrix(x, path)
