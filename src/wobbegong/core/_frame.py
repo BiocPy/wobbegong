@@ -58,5 +58,4 @@ def wobbegongify_frame(x: BiocFrame, path: str):
     bytes_list = dump_list_of_vectors(columns, types, con_path)
 
     summary["columns"] = {"names": list(_colnames), "types": types[: len(_colnames)], "bytes": bytes_list}
-
     _write_json(summary, os.path.join(path, "summary.json"))

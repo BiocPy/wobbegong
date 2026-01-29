@@ -96,3 +96,82 @@ def dump_list_of_vectors(columns, types, filepath):
             sizes.append(compress_and_write(f, raw_bytes))
 
     return sizes
+
+
+def coerce_data_chunk(data, type_str):
+    if type_str == "integer":
+        data = data.astype(np.int32, copy=False)
+    elif type_str == "double":
+        data = data.astype(np.float64, copy=False)
+
+    return data
+
+
+def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
+    """Uses mattress to initialize the matrix and iterate over rows.
+
+    Calculates stats and writes compressed rows.
+
+    Args:
+        x:
+            Matrix object. Refer to the mattress package for all
+            supported matrix input types.
+
+        filepath:
+            Path to write.
+
+        type_str:
+            NumPy dtype of the matrix.
+
+        chunk_size:
+            Number of rows to read.
+            Defaults to 10000
+
+        num_threads:
+            Number of threads.
+            Default to 1.
+    """
+    ptr = mattress.initialize(x)
+    is_sparse = ptr.sparse()
+    nrows = ptr.nrow()
+    ncols = ptr.ncol()
+
+    row_nnz = np.zeros(nrows, dtype=np.int32)
+    col_nnz = np.zeros(ncols, dtype=np.int32)
+
+    row_bytes_dense = []
+    row_bytes_val = []
+    row_bytes_idx = []
+
+    with open(filepath, "wb") as f:
+        pass
+
+    with open(filepath, "ab") as f:
+        if not is_sparse:
+            for start_row in range(0, nrows, chunk_size):
+                end_row = min(start_row + chunk_size, nrows)
+
+                chunk = delayedarray.extract_dense_array(ptr, (range(start_row, end_row), range(ncols)))
+                chunk = coerce_data_chunk(chunk, type_str)
+
+                nz_mask = chunk != 0
+                row_nnz[start_row:end_row] = np.sum(nz_mask, axis=1)
+                col_nnz += np.sum(nz_mask, axis=0)
+
+                for i in range(chunk.shape[0]):
+                    b = compress_and_write(f, chunk[i, :].tobytes())
+                    row_bytes_dense.append(b)
+
+    r_sums = ptr.row_sums(num_threads=num_threads)
+    c_sums = ptr.column_sums(num_threads=num_threads)
+
+    return {
+        "is_sparse": is_sparse,
+        "row_sums": r_sums,
+        "col_sums": c_sums,
+        "row_nonzero": row_nnz,
+        "col_nonzero": col_nnz,
+        "row_bytes_dense": row_bytes_dense,
+        "row_bytes_val": row_bytes_val,
+        "row_bytes_idx": row_bytes_idx,
+    }
