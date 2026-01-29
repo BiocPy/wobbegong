@@ -29,7 +29,10 @@ def wobbegongify_matrix(x, path: str):
 
     res = dump_matrix(x, con_path, type_str)
 
-    if not res["is_sparse"]:
+    if res["is_sparse"]:
+        summary["format"] = "sparse"
+        summary["row_bytes"] = {"value": res["row_bytes_val"], "index": res["row_bytes_idx"]}
+    else:
         summary["format"] = "dense"
         summary["row_bytes"] = res["row_bytes_dense"]
 
@@ -54,11 +57,11 @@ def _(x, path):
     wobbegongify_matrix(x, path)
 
 
-# @wobbegongify.register(sparse.spmatrix)
-# def _(x, path):
-#     wobbegongify_matrix(x, path)
+@wobbegongify.register(sparse.spmatrix)
+def _(x, path):
+    wobbegongify_matrix(x, path)
 
 
-# @wobbegongify.register(DelayedArray)
-# def _(x, path):
-#     wobbegongify_matrix(x, path)
+@wobbegongify.register(DelayedArray)
+def _(x, path):
+    wobbegongify_matrix(x, path)

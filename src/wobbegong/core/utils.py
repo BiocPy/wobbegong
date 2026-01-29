@@ -147,7 +147,41 @@ def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
         pass
 
     with open(filepath, "ab") as f:
-        if not is_sparse:
+        if is_sparse:
+            tptr = delayedarray.Transpose(ptr, (1, 0))
+
+            for start_row in range(0, nrows, chunk_size):
+                end_row = min(start_row + chunk_size, nrows)
+
+                sa = delayedarray.extract_sparse_array(tptr, (range(ncols), range(start_row, end_row)))
+
+                for idx, row_content in enumerate(sa.contents):
+                    global_row_idx = start_row + idx
+
+                    if row_content is None:
+                        data = np.array([], dtype=np.float64)
+                        indices = np.array([], dtype=np.int32)
+                    else:
+                        indices, data = row_content
+                        data = coerce_data_chunk(data, type_str)
+
+                    count = len(data)
+                    row_nnz[global_row_idx] = count
+                    if count > 0:
+                        col_nnz[indices] += 1
+
+                    vb = compress_and_write(f, data.tobytes())
+                    row_bytes_val.append(vb)
+
+                    if count > 0:
+                        deltas = np.diff(indices, prepend=0)
+                        deltas[0] = indices[0]
+                        ib = compress_and_write(f, deltas.astype(np.int32).tobytes())
+                    else:
+                        ib = compress_and_write(f, b"")
+                    row_bytes_idx.append(ib)
+
+        else:
             for start_row in range(0, nrows, chunk_size):
                 end_row = min(start_row + chunk_size, nrows)
 
