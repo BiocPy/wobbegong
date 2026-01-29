@@ -1,11 +1,18 @@
+import json
 import os
 import shutil
-import pytest
+
 import numpy as np
-import json
+import pytest
 from biocframe import BiocFrame
+
 from wobbegong import wobbegongify
-from wobbegong.client.utils import read_integer, read_double
+from wobbegong.client.utils import read_boolean, read_double, read_integer, read_string
+
+__author__ = "Jayaram Kancherla"
+__copyright__ = "Jayaram Kancherla"
+__license__ = "MIT"
+
 
 @pytest.fixture
 def temp_dir(tmp_path):
@@ -13,19 +20,24 @@ def temp_dir(tmp_path):
     d.mkdir()
     return str(d)
 
+
 def test_basic_dataframe(temp_dir):
-    df = BiocFrame({
-        "A": [1, 2, 3, 4, 5],
-        "B": [1.1, 2.2, 3.3, 4.4, 5.5],
-    })
+    df = BiocFrame(
+        {
+            "A": [1, 2, 3, 4, 5],
+            "B": [1.1, 2.2, 3.3, 4.4, 5.5],
+            "C": ["akari", "ai", "alice", "alicia", "athena"],
+            "D": [True, False, True, False, True],
+        }
+    )
 
     wobbegongify(df, temp_dir)
 
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
 
-    assert summary["columns"]["names"] == ["A", "B"]
-    assert summary["columns"]["types"] == ["integer", "double"]
+    assert summary["columns"]["names"] == ["A", "B", "C", "D"]
+    assert summary["columns"]["types"] == ["integer", "double", "string", "boolean"]
     assert summary["row_count"] == 5
     assert not summary["has_row_names"]
 
@@ -39,3 +51,28 @@ def test_basic_dataframe(temp_dir):
 
     res_b = read_double(con_path, starts[1], bytes_lens[1])
     np.testing.assert_array_almost_equal(res_b, df.column("B"))
+
+    res_c = read_string(con_path, starts[2], bytes_lens[2])
+    assert res_c == df.column("C")
+
+    res_d = read_boolean(con_path, starts[3], bytes_lens[3])
+    np.testing.assert_array_equal(res_d, df.column("D"))
+
+
+def test_dataframe_rownames(temp_dir):
+    df = BiocFrame({"foo": [1.1, 2.2]}, row_names=["row1", "row2"])
+
+    wobbegongify(df, temp_dir)
+
+    with open(os.path.join(temp_dir, "summary.json")) as f:
+        summary = json.load(f)
+
+    assert summary["has_row_names"] is True
+    con_path = os.path.join(temp_dir, "content")
+    bytes_lens = summary["columns"]["bytes"]
+
+    start = sum(bytes_lens[:-1])
+    length = bytes_lens[-1]
+
+    res_rownames = read_string(con_path, start, length)
+    assert res_rownames == list(df.row_names)
