@@ -13,6 +13,10 @@ from wobbegong.client.utils import (
     reconstruct_sparse_row,
 )
 
+__author__ = "Jayaram Kancherla"
+__copyright__ = "Jayaram Kancherla"
+__license__ = "MIT"
+
 
 @pytest.fixture
 def temp_dir(tmp_path):
