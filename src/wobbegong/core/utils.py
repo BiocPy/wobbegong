@@ -98,15 +98,6 @@ def dump_list_of_vectors(columns, types, filepath):
     return sizes
 
 
-def coerce_data_chunk(data, type_str):
-    if type_str == "integer":
-        data = data.astype(np.int32, copy=False)
-    elif type_str == "double":
-        data = data.astype(np.float64, copy=False)
-
-    return data
-
-
 def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
     """Uses mattress to initialize the matrix and iterate over rows.
 
@@ -163,7 +154,7 @@ def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
                         indices = np.array([], dtype=np.int32)
                     else:
                         indices, data = row_content
-                        data = coerce_data_chunk(data, type_str)
+                        data = _sanitize_array(data, type_str)
 
                     count = len(data)
                     row_nnz[global_row_idx] = count
@@ -186,7 +177,7 @@ def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
                 end_row = min(start_row + chunk_size, nrows)
 
                 chunk = delayedarray.extract_dense_array(ptr, (range(start_row, end_row), range(ncols)))
-                chunk = coerce_data_chunk(chunk, type_str)
+                chunk = _sanitize_array(chunk, type_str)
 
                 nz_mask = chunk != 0
                 row_nnz[start_row:end_row] = np.sum(nz_mask, axis=1)

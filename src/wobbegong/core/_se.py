@@ -1,8 +1,9 @@
 import os
 
+from singlecellexperiment import SingleCellExperiment
 from summarizedexperiment import SummarizedExperiment
 
-from .utils import _write_json
+from .utils import _get_type_string, _sanitize_array, _write_json, dump_list_of_vectors, get_byte_order
 from .wobbegongify import wobbegongify
 
 __author__ = "Jayaram Kancherla"
@@ -32,8 +33,10 @@ def wobbegongify_se(x: SummarizedExperiment, path: str):
 
     for i, name in enumerate(assay_names):
         mat = x.get_assay(name)
+
         if len(mat.shape) != 2:
             continue
+
         wobbegongify(mat, os.path.join(assays_dir, str(len(valid_assays))))
         valid_assays.append(name)
 
@@ -46,4 +49,60 @@ def wobbegongify_se(x: SummarizedExperiment, path: str):
         "assay_names": valid_assays,
     }
 
+    if isinstance(x, SingleCellExperiment):
+        summary["object"] = "single_cell_experiment"
+        _handle_sce_parts(x, path, summary)
+
     _write_json(summary, os.path.join(path, "summary.json"))
+
+
+def _handle_sce_parts(x: SingleCellExperiment, path, summary):
+    rd_names = x.get_reduced_dimension_names()
+    summary["reduced_dimension_names"] = rd_names
+
+    rd_dir = os.path.join(path, "reduced_dimensions")
+    if not os.path.exists(rd_dir):
+        os.makedirs(rd_dir)
+
+    for i, name in enumerate(rd_names):
+        rd = x.get_reduced_dimension(name)
+        curr_dir = os.path.join(rd_dir, str(i))
+        if not os.path.exists(curr_dir):
+            os.makedirs(curr_dir)
+
+        columns = []
+        types = []
+        col_names = [str(k) for k in range(rd.shape[1])]
+
+        for c in range(rd.shape[1]):
+            col = rd[:, c]
+            t_str = _get_type_string(col.dtype)
+            columns.append(_sanitize_array(col, t_str))
+            types.append(t_str)
+
+        content_path = os.path.join(curr_dir, "content")
+        bytes_list = dump_list_of_vectors(columns, types, content_path)
+
+        rd_summ = {
+            "object": "data_frame",
+            "byte_order": get_byte_order(),
+            "row_count": rd.shape[0],
+            "columns": {"names": col_names, "types": types, "bytes": bytes_list},
+        }
+        _write_json(rd_summ, os.path.join(curr_dir, "summary.json"))
+
+    ae_names = x.get_alternative_experiment_names()
+    summary["alternative_experiment_names"] = ae_names
+
+    ae_dir = os.path.join(path, "alternative_experiments")
+    if not os.path.exists(ae_dir):
+        os.makedirs(ae_dir)
+
+    for i, name in enumerate(ae_names):
+        ae = x.get_alternative_experiment(name)
+        wobbegongify(ae, os.path.join(ae_dir, str(i)))
+
+
+@wobbegongify.register
+def _(x: SingleCellExperiment, path: str):
+    return wobbegongify.registry[SummarizedExperiment](x, path)
