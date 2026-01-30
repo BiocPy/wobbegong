@@ -70,3 +70,14 @@ def _parse_bytes(raw_bytes, dtype_str):
         return text.split("\0")
     else:
         raise ValueError(f"Unknown type: {dtype_str}")
+
+
+def _map_wobbegong_type_to_numpy(type_str):
+    if type_str == "integer":
+        return np.int32
+    elif type_str == "double":
+        return np.float64
+    elif type_str == "boolean":
+        return np.uint8
+    else:
+        return object

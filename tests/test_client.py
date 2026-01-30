@@ -54,6 +54,9 @@ def test_client_local_matrix_dense(tmp_path):
     r_sum = wmat.get_statistic("row_sum")
     np.testing.assert_array_equal(r_sum, [6, 15])
 
+    all = wmat.get_rows(range(mat.shape[1]-1)) 
+    assert np.allclose(mat, all)
+
 
 def test_client_local_matrix_sparse(tmp_path):
     mat = sparse.csr_matrix([[1.0, 0, 0, 2.0], [0, 0, 3.0, 0], [0, 0, 0, 0]])
