@@ -1,6 +1,6 @@
 import json
 import sys
-import zlib
+from typing import Literal
 
 import delayedarray
 import mattress
@@ -79,7 +79,7 @@ def get_byte_order() -> str:
     return "little_endian" if sys.byteorder == "little" else "big_endian"
 
 
-def compress_and_write(f, data_bytes: bytes) -> int:
+def compress_and_write(f, data_bytes: bytes, compression: Literal["lz4", "zlib"] = "zlib") -> int:
     """Use zlib to compress and write data to file.
 
     Args:
@@ -89,15 +89,28 @@ def compress_and_write(f, data_bytes: bytes) -> int:
         data_bytes:
             Data to write (in bytes).
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         Length of the compressed data written.
     """
-    compressed = zlib.compress(data_bytes)
+    if compression == "lz4":
+        import lz4.block
+
+        compressed = lz4.block.compress(data_bytes, store_size=False)
+    else:
+        import zlib
+
+        compressed = zlib.compress(data_bytes)
+
     f.write(compressed)
     return len(compressed)
 
 
-def dump_list_of_vectors(columns: list, types: list[str], filepath: str) -> list[int]:
+def dump_list_of_vectors(
+    columns: list, types: list[str], filepath: str, compression: Literal["lz4", "zlib"] = "zlib"
+) -> list[int]:
     """Write a list of vectors to disk.
 
     Args:
@@ -109,6 +122,9 @@ def dump_list_of_vectors(columns: list, types: list[str], filepath: str) -> list
 
         filepath:
             Path to write the data.
+
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
 
     Returns:
         List of compressed sizes for each column.
@@ -131,12 +147,19 @@ def dump_list_of_vectors(columns: list, types: list[str], filepath: str) -> list
             else:
                 raw_bytes = col.tobytes()
 
-            sizes.append(compress_and_write(f, raw_bytes))
+            sizes.append(compress_and_write(f, raw_bytes, compression=compression))
 
     return sizes
 
 
-def dump_matrix(x, filepath: str, type_str: str, chunk_size: int = 10000, num_threads: int = 1) -> dict:
+def dump_matrix(
+    x,
+    filepath: str,
+    type_str: str,
+    chunk_size: int = 10000,
+    num_threads: int = 1,
+    compression: Literal["lz4", "zlib"] = "zlib",
+) -> dict:
     """Uses mattress to initialize the matrix and iterate over rows.
 
     Calculates stats and writes compressed rows.
@@ -159,6 +182,9 @@ def dump_matrix(x, filepath: str, type_str: str, chunk_size: int = 10000, num_th
         num_threads:
             Number of threads for stats calculation.
             Defaults to 1.
+
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
 
     Returns:
         Dictionary containing matrix statistics and file byte offsets.
@@ -202,15 +228,15 @@ def dump_matrix(x, filepath: str, type_str: str, chunk_size: int = 10000, num_th
                     if count > 0:
                         col_nnz[indices] += 1
 
-                    vb = compress_and_write(f, data.tobytes())
+                    vb = compress_and_write(f, data.tobytes(), compression=compression)
                     row_bytes_val.append(vb)
 
                     if count > 0:
                         deltas = np.diff(indices, prepend=0)
                         deltas[0] = indices[0]
-                        ib = compress_and_write(f, deltas.astype(np.int32).tobytes())
+                        ib = compress_and_write(f, deltas.astype(np.int32).tobytes(), compression=compression)
                     else:
-                        ib = compress_and_write(f, b"")
+                        ib = compress_and_write(f, b"", compression=compression)
                     row_bytes_idx.append(ib)
 
         else:
@@ -225,7 +251,7 @@ def dump_matrix(x, filepath: str, type_str: str, chunk_size: int = 10000, num_th
                 col_nnz += np.sum(nz_mask, axis=0)
 
                 for i in range(chunk.shape[0]):
-                    b = compress_and_write(f, chunk[i, :].tobytes())
+                    b = compress_and_write(f, chunk[i, :].tobytes(), compression=compression)
                     row_bytes_dense.append(b)
 
     r_sums = ptr.row_sums(num_threads=num_threads)

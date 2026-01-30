@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 
 from singlecellexperiment import SingleCellExperiment
 from summarizedexperiment import SummarizedExperiment
@@ -12,7 +13,7 @@ __license__ = "MIT"
 
 
 @wobbegongify.register
-def wobbegongify_se(x: SummarizedExperiment, path: str) -> None:
+def wobbegongify_se(x: SummarizedExperiment, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert a SummarizedExperiment object to the wobbegong format.
 
     Args:
@@ -21,17 +22,20 @@ def wobbegongify_se(x: SummarizedExperiment, path: str) -> None:
 
         path:
             Path to store object.
+
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
     """
     if not os.path.exists(path):
         os.makedirs(path)
 
     _row_data = x.get_row_data()
     if _row_data is not None and _row_data.shape[1] > 0:
-        wobbegongify(_row_data, os.path.join(path, "row_data"))
+        wobbegongify(_row_data, os.path.join(path, "row_data"), compression=compression)
 
     _col_data = x.get_column_data()
     if _col_data is not None and _col_data.shape[1] > 0:
-        wobbegongify(_col_data, os.path.join(path, "column_data"))
+        wobbegongify(_col_data, os.path.join(path, "column_data"), compression=compression)
 
     assay_names = x.get_assay_names()
     valid_assays = []
@@ -46,7 +50,7 @@ def wobbegongify_se(x: SummarizedExperiment, path: str) -> None:
         if len(mat.shape) != 2:
             continue
 
-        wobbegongify(mat, os.path.join(assays_dir, str(len(valid_assays))))
+        wobbegongify(mat, os.path.join(assays_dir, str(len(valid_assays))), compression=compression)
         valid_assays.append(name)
 
     summary = {
@@ -56,16 +60,19 @@ def wobbegongify_se(x: SummarizedExperiment, path: str) -> None:
         "has_row_data": _row_data is not None and _row_data.shape[1] > 0,
         "has_column_data": _col_data is not None and _col_data.shape[1] > 0,
         "assay_names": valid_assays,
+        "compression": compression,
     }
 
     if isinstance(x, SingleCellExperiment):
         summary["object"] = "single_cell_experiment"
-        _handle_sce_parts(x, path, summary)
+        _handle_sce_parts(x, path, summary, compression=compression)
 
     _write_json(summary, os.path.join(path, "summary.json"))
 
 
-def _handle_sce_parts(x: SingleCellExperiment, path: str, summary: dict) -> None:
+def _handle_sce_parts(
+    x: SingleCellExperiment, path: str, summary: dict, compression: Literal["zlib", "lz4"] = "zlib"
+) -> None:
     """Handle SingleCellExperiment specific parts (reduced dims, alt exps).
 
     Args:
@@ -77,6 +84,9 @@ def _handle_sce_parts(x: SingleCellExperiment, path: str, summary: dict) -> None
 
         summary:
             Summary dictionary to update.
+
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
     """
     rd_names = x.get_reduced_dimension_names()
     summary["reduced_dimension_names"] = rd_names
@@ -102,13 +112,14 @@ def _handle_sce_parts(x: SingleCellExperiment, path: str, summary: dict) -> None
             types.append(t_str)
 
         content_path = os.path.join(curr_dir, "content")
-        bytes_list = dump_list_of_vectors(columns, types, content_path)
+        bytes_list = dump_list_of_vectors(columns, types, content_path, compression=compression)
 
         rd_summ = {
             "object": "data_frame",
             "byte_order": get_byte_order(),
             "row_count": rd.shape[0],
             "columns": {"names": col_names, "types": types, "bytes": bytes_list},
+            "compression": compression,
         }
         _write_json(rd_summ, os.path.join(curr_dir, "summary.json"))
 
@@ -121,10 +132,10 @@ def _handle_sce_parts(x: SingleCellExperiment, path: str, summary: dict) -> None
 
     for i, name in enumerate(ae_names):
         ae = x.get_alternative_experiment(name)
-        wobbegongify(ae, os.path.join(ae_dir, str(i)))
+        wobbegongify(ae, os.path.join(ae_dir, str(i)), compression=compression)
 
 
 @wobbegongify.register
-def _(x: SingleCellExperiment, path: str) -> None:
+def wobbegongify_sce(x: SingleCellExperiment, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert SingleCellExperiment to wobbegong format."""
-    return wobbegongify.registry[SummarizedExperiment](x, path)
+    return wobbegongify.registry[SummarizedExperiment](x, path, compression)

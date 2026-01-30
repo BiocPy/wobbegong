@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 
 import numpy as np
 from delayedarray import DelayedArray
@@ -12,7 +13,7 @@ __copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
 
 
-def wobbegongify_matrix(x, path: str) -> None:
+def wobbegongify_matrix(x, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert a matrix-like object to the wobbegong format.
 
     Args:
@@ -21,6 +22,9 @@ def wobbegongify_matrix(x, path: str) -> None:
 
         path:
             Path to store object.
+
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
     """
     if not os.path.exists(path):
         os.makedirs(path)
@@ -34,9 +38,10 @@ def wobbegongify_matrix(x, path: str) -> None:
         "row_count": x.shape[0],
         "column_count": x.shape[1],
         "type": type_str,
+        "compression": compression,
     }
 
-    res = dump_matrix(x, con_path, type_str)
+    res = dump_matrix(x, con_path, type_str, compression=compression)
 
     if res["is_sparse"]:
         summary["format"] = "sparse"
@@ -56,24 +61,24 @@ def wobbegongify_matrix(x, path: str) -> None:
         _sanitize_array(res["col_nonzero"], stat_types[3]),
     ]
 
-    stat_bytes = dump_list_of_vectors(stat_arrays, stat_types, stats_path)
+    stat_bytes = dump_list_of_vectors(stat_arrays, stat_types, stats_path, compression=compression)
     summary["statistics"] = {"names": stat_names, "types": stat_types, "bytes": stat_bytes}
     _write_json(summary, os.path.join(path, "summary.json"))
 
 
 @wobbegongify.register(np.ndarray)
-def _(x: np.ndarray, path: str) -> None:
+def _(x: np.ndarray, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert numpy array to wobbegong format."""
-    wobbegongify_matrix(x, path)
+    wobbegongify_matrix(x, path, compression)
 
 
 @wobbegongify.register(sparse.spmatrix)
-def _(x: sparse.spmatrix, path: str) -> None:
+def _(x: sparse.spmatrix, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert sparse matrix to wobbegong format."""
-    wobbegongify_matrix(x, path)
+    wobbegongify_matrix(x, path, compression)
 
 
 @wobbegongify.register(DelayedArray)
-def _(x: DelayedArray, path: str) -> None:
+def _(x: DelayedArray, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert DelayedArray to wobbegong format."""
-    wobbegongify_matrix(x, path)
+    wobbegongify_matrix(x, path, compression)
