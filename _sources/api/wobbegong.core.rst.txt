@@ -1,0 +1,29 @@
+wobbegong.core package
+======================
+
+Submodules
+----------
+
+wobbegong.core.utils module
+---------------------------
+
+.. automodule:: wobbegong.core.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+wobbegong.core.wobbegongify module
+----------------------------------
+
+.. automodule:: wobbegong.core.wobbegongify
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: wobbegong.core
+   :members:
+   :show-inheritance:
+   :undoc-members:

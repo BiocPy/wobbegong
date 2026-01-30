@@ -1,0 +1,37 @@
+wobbegong.client package
+========================
+
+Submodules
+----------
+
+wobbegong.client.client module
+------------------------------
+
+.. automodule:: wobbegong.client.client
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+wobbegong.client.readers module
+-------------------------------
+
+.. automodule:: wobbegong.client.readers
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+wobbegong.client.utils module
+-----------------------------
+
+.. automodule:: wobbegong.client.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: wobbegong.client
+   :members:
+   :show-inheritance:
+   :undoc-members:

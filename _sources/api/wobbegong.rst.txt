@@ -1,0 +1,19 @@
+wobbegong package
+=================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   wobbegong.client
+   wobbegong.core
+
+Module contents
+---------------
+
+.. automodule:: wobbegong
+   :members:
+   :show-inheritance:
+   :undoc-members:
