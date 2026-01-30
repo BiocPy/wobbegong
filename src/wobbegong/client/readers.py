@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import mmap
 import os
 import zlib
@@ -15,20 +17,51 @@ __license__ = "MIT"
 
 
 class WobbegongBase:
-    def __init__(self, accessor: Accessor, summary=None):
+    """Base class for Wobbegong objects."""
+
+    def __init__(self, accessor: Accessor, summary: dict = None):
+        """Initialize the base object.
+
+        Args:
+            accessor:
+                Helper to access data.
+
+            summary:
+                Summary dictionary. If None, it is read from 'summary.json'.
+        """
         self.accessor = accessor
         self.summary = summary if summary else self.accessor.read_json("summary.json")
 
 
 class WobbegongDataFrame(WobbegongBase):
-    def __init__(self, accessor, summary=None):
+    """WobbegongDataFrame class."""
+
+    def __init__(self, accessor: Accessor, summary: dict = None):
+        """Initialize WobbegongDataFrame.
+
+        Args:
+            accessor:
+                Helper to access data.
+
+            summary:
+                Summary dictionary.
+        """
         super().__init__(accessor, summary)
         self.colnames = self.summary["columns"]["names"]
         self.coltypes = self.summary["columns"]["types"]
         self.colbytes = self.summary["columns"]["bytes"]
         self.shape = (self.summary["row_count"], len(self.colnames))
 
-    def get_column(self, index_or_name):
+    def get_column(self, index_or_name: int | str) -> np.ndarray | list:
+        """Get a column by index or name.
+
+        Args:
+            index_or_name:
+                Column index (int) or name (str).
+
+        Returns:
+            The column data.
+        """
         if isinstance(index_or_name, str):
             try:
                 idx = self.colnames.index(index_or_name)
@@ -46,7 +79,12 @@ class WobbegongDataFrame(WobbegongBase):
         raw = self.accessor.read_bytes("content", start, length)
         return _parse_bytes(raw, self.coltypes[idx])
 
-    def get_row_names(self):
+    def get_row_names(self) -> np.ndarray | list | None:
+        """Get row names if available.
+
+        Returns:
+            Row names or None.
+        """
         if not self.summary.get("has_row_names", False):
             return None
 
@@ -57,13 +95,33 @@ class WobbegongDataFrame(WobbegongBase):
 
 
 class WobbegongMatrix(WobbegongBase):
-    def __init__(self, accessor, summary=None):
+    """WobbegongMatrix class."""
+
+    def __init__(self, accessor: Accessor, summary: dict = None):
+        """Initialize WobbegongMatrix.
+
+        Args:
+            accessor:
+                Helper to access data.
+
+            summary:
+                Summary dictionary.
+        """
         super().__init__(accessor, summary)
         self.shape = (self.summary["row_count"], self.summary["column_count"])
         self.format = self.summary.get("format", "dense")
         self.dtype = self.summary["type"]
 
-    def get_row(self, row_idx):
+    def get_row(self, row_idx: int) -> np.ndarray:
+        """Get a row by index.
+
+        Args:
+            row_idx:
+                Row index.
+
+        Returns:
+            Row data.
+        """
         if row_idx < 0 or row_idx >= self.shape[0]:
             raise IndexError(f"Row index {row_idx} out of bounds")
 
@@ -72,7 +130,7 @@ class WobbegongMatrix(WobbegongBase):
         else:
             return self._get_sparse_row(row_idx)
 
-    def _get_dense_row(self, row_idx):
+    def _get_dense_row(self, row_idx) -> np.ndarray:
         row_bytes = self.summary["row_bytes"]
         start = sum(row_bytes[:row_idx])
         length = row_bytes[row_idx]
@@ -80,7 +138,7 @@ class WobbegongMatrix(WobbegongBase):
         raw = self.accessor.read_bytes("content", start, length)
         return _parse_bytes(raw, self.dtype)
 
-    def _get_sparse_row(self, row_idx):
+    def _get_sparse_row(self, row_idx) -> np.ndarray:
         v_bytes = self.summary["row_bytes"]["value"]
         i_bytes = self.summary["row_bytes"]["index"]
 
@@ -102,7 +160,16 @@ class WobbegongMatrix(WobbegongBase):
             out[indices] = values
         return out
 
-    def get_statistic(self, name):
+    def get_statistic(self, name: str) -> np.ndarray | int | float:
+        """Get a statistic by name.
+
+        Args:
+            name:
+                Name of the statistic.
+
+        Returns:
+            The statistic value.
+        """
         stats_info = self.summary.get("statistics")
         if not stats_info or name not in stats_info["names"]:
             raise KeyError(f"Statistic '{name}' not available")
@@ -115,14 +182,30 @@ class WobbegongMatrix(WobbegongBase):
         raw = self.accessor.read_bytes("stats", start, length)
         return _parse_bytes(raw, dtype)
 
-    def _process_dense_chunk(self, args):
-        """Worker for parallel dense reading."""
+    def _process_dense_chunk(self, args: tuple) -> np.ndarray | list:
+        """Worker for parallel dense reading.
+
+        Args:
+            args:
+                Tuple containing (mmap, start, length, dtype).
+
+        Returns:
+            Parsed bytes.
+        """
         mm, start, length, dtype = args
         raw = mm[start : start + length]
         return _parse_bytes(raw, dtype)
 
-    def _process_sparse_chunk(self, args):
-        """Worker for parallel sparse reading."""
+    def _process_sparse_chunk(self, args: tuple) -> tuple[np.ndarray | list, np.ndarray]:
+        """Worker for parallel sparse reading.
+
+        Args:
+            args:
+                Tuple containing (mmap, v_start, v_len, i_start, i_len, dtype).
+
+        Returns:
+            Tuple of (vals, cols).
+        """
         mm, v_start, v_len, i_start, i_len, dtype = args
 
         raw_v = mm[v_start : v_start + v_len]
@@ -134,10 +217,17 @@ class WobbegongMatrix(WobbegongBase):
 
         return vals, cols
 
-    def get_rows(self, row_indices):
+    def get_rows(self, row_indices: slice | list | np.ndarray) -> np.ndarray | sparse.csr_matrix:
         """Retrieves multiple rows efficiently using mmap and parallel decompression.
 
         Note: Currently only supports local files.
+
+        Args:
+            row_indices:
+                Row indices to retrieve. Can be a slice, list, or numpy array.
+
+        Returns:
+            A dense numpy array or sparse CSR matrix containing the requested rows.
         """
         from ._base import LocalAccessor
 
@@ -189,8 +279,8 @@ class WobbegongMatrix(WobbegongBase):
 
                         list(executor.map(process_dense_batch, batches))
                         return out
-
                     else:
+
                         def process_sparse_batch(batch_idxs):
                             batch_data = []
                             batch_indices = []
@@ -236,21 +326,51 @@ class WobbegongMatrix(WobbegongBase):
 
 
 class WobbegongSummarizedExperiment(WobbegongBase):
-    def __init__(self, accessor, summary=None):
+    """WobbegongSummarizedExperiment class."""
+
+    def __init__(self, accessor: Accessor, summary: dict = None):
+        """Initialize WobbegongSummarizedExperiment.
+
+        Args:
+            accessor:
+                Helper to access data.
+
+            summary:
+                Summary dictionary.
+        """
         super().__init__(accessor, summary)
         self.assay_names = self.summary.get("assay_names", [])
 
-    def get_row_data(self):
+    def get_row_data(self) -> WobbegongDataFrame | None:
+        """Get row data.
+
+        Returns:
+            Row data object or None.
+        """
         if not self.summary.get("has_row_data"):
             return None
         return _load_wobbegong_dir(self.accessor, "row_data")
 
-    def get_col_data(self):
+    def get_col_data(self) -> WobbegongDataFrame | None:
+        """Get column data.
+
+        Returns:
+            Column data object or None.
+        """
         if not self.summary.get("has_column_data"):
             return None
         return _load_wobbegong_dir(self.accessor, "column_data")
 
-    def get_assay(self, index_or_name):
+    def get_assay(self, index_or_name: int | str) -> WobbegongBase:
+        """Get assay by index or name.
+
+        Args:
+            index_or_name:
+                Assay index (int) or name (str).
+
+        Returns:
+            Assay object.
+        """
         if isinstance(index_or_name, str):
             try:
                 idx = self.assay_names.index(index_or_name)
@@ -261,12 +381,22 @@ class WobbegongSummarizedExperiment(WobbegongBase):
 
         if idx < 0 or idx >= len(self.assay_names):
             raise IndexError("Assay index out of bounds")
-
         return _load_wobbegong_dir(self.accessor, f"assays/{idx}")
 
 
 class WobbegongSingleCellExperiment(WobbegongSummarizedExperiment):
-    def get_reduced_dim(self, name):
+    """WobbegongSingleCellExperiment class."""
+
+    def get_reduced_dim(self, name: str) -> WobbegongBase:
+        """Get reduced dimension by name.
+
+        Args:
+            name:
+                Name of the reduced dimension.
+
+        Returns:
+            Reduced dimension object.
+        """
         names = self.summary.get("reduced_dimension_names", [])
         if name not in names:
             raise KeyError(f"Reduced dim '{name}' not found")
@@ -275,10 +405,18 @@ class WobbegongSingleCellExperiment(WobbegongSummarizedExperiment):
         return _load_wobbegong_dir(self.accessor, f"reduced_dimensions/{idx}")
 
 
-def _load_wobbegong_dir(parent_accessor, relative_path):
-    """Creates a new accessor for a subdirectory (e.g., 'assays/0')
+def _load_wobbegong_dir(parent_accessor: Accessor, relative_path: str) -> WobbegongBase:
+    """Create a new accessor for a subdirectory (e.g., 'assays/0') and returns the appropriate Wobbegong object.
 
-    and returns the appropriate Wobbegong object.
+    Args:
+        parent_accessor:
+            The accessor of the parent object.
+
+        relative_path:
+            Path to the subdirectory relative to the parent.
+
+    Returns:
+        A new Wobbegong object.
     """
     if isinstance(parent_accessor, LocalAccessor):
         new_path = os.path.join(parent_accessor.base_path, relative_path)

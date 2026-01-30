@@ -12,7 +12,7 @@ __license__ = "MIT"
 
 
 @wobbegongify.register
-def wobbegongify_frame(x: BiocFrame, path: str):
+def wobbegongify_frame(x: BiocFrame, path: str) -> None:
     """Convert a `BiocFrame` object to the wobbegong format.
 
     Stores data in columnar format to quickly retrieve an entire column.

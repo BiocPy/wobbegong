@@ -13,12 +13,15 @@ __copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
 
 
-def load(path_or_url):
-    """Loads a Wobbegong dataset from a local path or URL.
+def load(path_or_url: str):
+    """Load a Wobbegong dataset from a local path or URL.
 
     Args:
         path_or_url:
-            Local path or URL.
+            Local filesystem path or a remote URL (http/https).
+
+    Returns:
+        A Wobbegong object (DataFrame, Matrix, SummarizedExperiment, or SingleCellExperiment).
     """
     parsed = urlparse(path_or_url)
     if parsed.scheme in ("http", "https"):

@@ -12,7 +12,16 @@ __copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
 
 
-def wobbegongify_matrix(x, path: str):
+def wobbegongify_matrix(x, path: str) -> None:
+    """Convert a matrix-like object to the wobbegong format.
+
+    Args:
+        x:
+            Matrix object (numpy, sparse, or DelayedArray).
+
+        path:
+            Path to store object.
+    """
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -53,15 +62,18 @@ def wobbegongify_matrix(x, path: str):
 
 
 @wobbegongify.register(np.ndarray)
-def _(x, path):
+def _(x: np.ndarray, path: str) -> None:
+    """Convert numpy array to wobbegong format."""
     wobbegongify_matrix(x, path)
 
 
 @wobbegongify.register(sparse.spmatrix)
-def _(x, path):
+def _(x: sparse.spmatrix, path: str) -> None:
+    """Convert sparse matrix to wobbegong format."""
     wobbegongify_matrix(x, path)
 
 
 @wobbegongify.register(DelayedArray)
-def _(x, path):
+def _(x: DelayedArray, path: str) -> None:
+    """Convert DelayedArray to wobbegong format."""
     wobbegongify_matrix(x, path)

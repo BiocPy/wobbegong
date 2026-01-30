@@ -1,4 +1,5 @@
 from functools import singledispatch
+from typing import Any
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
@@ -6,7 +7,7 @@ __license__ = "MIT"
 
 
 @singledispatch
-def wobbegongify(x, path: str):
+def wobbegongify(x: Any, path: str) -> None:
     """Convert an object to the wobbegong format.
 
     Args:

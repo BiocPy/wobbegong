@@ -12,7 +12,16 @@ __license__ = "MIT"
 
 
 @wobbegongify.register
-def wobbegongify_se(x: SummarizedExperiment, path: str):
+def wobbegongify_se(x: SummarizedExperiment, path: str) -> None:
+    """Convert a SummarizedExperiment object to the wobbegong format.
+
+    Args:
+        x:
+            SummarizedExperiment object to save.
+
+        path:
+            Path to store object.
+    """
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -56,7 +65,19 @@ def wobbegongify_se(x: SummarizedExperiment, path: str):
     _write_json(summary, os.path.join(path, "summary.json"))
 
 
-def _handle_sce_parts(x: SingleCellExperiment, path, summary):
+def _handle_sce_parts(x: SingleCellExperiment, path: str, summary: dict) -> None:
+    """Handle SingleCellExperiment specific parts (reduced dims, alt exps).
+
+    Args:
+        x:
+            SingleCellExperiment object.
+
+        path:
+            Path to store object.
+
+        summary:
+            Summary dictionary to update.
+    """
     rd_names = x.get_reduced_dimension_names()
     summary["reduced_dimension_names"] = rd_names
 
@@ -104,5 +125,6 @@ def _handle_sce_parts(x: SingleCellExperiment, path, summary):
 
 
 @wobbegongify.register
-def _(x: SingleCellExperiment, path: str):
+def _(x: SingleCellExperiment, path: str) -> None:
+    """Convert SingleCellExperiment to wobbegong format."""
     return wobbegongify.registry[SummarizedExperiment](x, path)

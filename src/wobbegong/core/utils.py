@@ -11,12 +11,30 @@ __copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
 
 
-def _write_json(data, path):
+def _write_json(data: dict, path: str) -> None:
+    """Write dictionary to a JSON file.
+
+    Args:
+        data:
+            Data to write.
+
+        path:
+            Path to the JSON file.
+    """
     with open(path, "w") as f:
         json.dump(data, f, indent=4)
 
 
-def _get_type_string(dtype):
+def _get_type_string(dtype: np.dtype) -> str:
+    """Get Wobbegong type string from numpy dtype.
+
+    Args:
+        dtype:
+            Numpy dtype.
+
+    Returns:
+        Wobbegong type string ('integer', 'double', 'boolean', 'string').
+    """
     if np.issubdtype(dtype, np.integer):
         return "integer"
 
@@ -32,7 +50,19 @@ def _get_type_string(dtype):
     return "string"
 
 
-def _sanitize_array(x, type_str):
+def _sanitize_array(x: np.ndarray, type_str: str) -> np.ndarray:
+    """Sanitize array to ensure correct type for Wobbegong.
+
+    Args:
+        x:
+            Input array.
+
+        type_str:
+            Expected Wobbegong type string.
+
+    Returns:
+        Sanitized array.
+    """
     if type_str == "integer":
         return x.astype(np.int32, copy=False)
     elif type_str == "double":
@@ -40,40 +70,48 @@ def _sanitize_array(x, type_str):
     return x
 
 
-def get_byte_order():
-    """Return byte order."""
+def get_byte_order() -> str:
+    """Return byte order of the machine.
+
+    Returns:
+        'little_endian' or 'big_endian'.
+    """
     return "little_endian" if sys.byteorder == "little" else "big_endian"
 
 
-def compress_and_write(f, data_bytes) -> int:
+def compress_and_write(f, data_bytes: bytes) -> int:
     """Use zlib to compress and write data to file.
 
     Args:
         f:
-            File writer.
+            File writer object.
 
         data_bytes:
             Data to write (in bytes).
 
     Returns:
-        Length of the data_bytes after compression."""
+        Length of the compressed data written.
+    """
     compressed = zlib.compress(data_bytes)
     f.write(compressed)
     return len(compressed)
 
 
-def dump_list_of_vectors(columns, types, filepath):
+def dump_list_of_vectors(columns: list, types: list[str], filepath: str) -> list[int]:
     """Write a list of vectors to disk.
 
     Args:
         columns:
-            Column vectors to write.
+            List of column vectors (arrays) to write.
 
         types:
-            List specifying type for each column.
+            List identifying the type for each column.
 
         filepath:
             Path to write the data.
+
+    Returns:
+        List of compressed sizes for each column.
     """
     with open(filepath, "wb") as f:
         pass
@@ -98,7 +136,7 @@ def dump_list_of_vectors(columns, types, filepath):
     return sizes
 
 
-def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
+def dump_matrix(x, filepath: str, type_str: str, chunk_size: int = 10000, num_threads: int = 1) -> dict:
     """Uses mattress to initialize the matrix and iterate over rows.
 
     Calculates stats and writes compressed rows.
@@ -112,15 +150,18 @@ def dump_matrix(x, filepath, type_str, chunk_size=10000, num_threads=1):
             Path to write.
 
         type_str:
-            NumPy dtype of the matrix.
+            Wobbegong type string of the matrix data.
 
         chunk_size:
-            Number of rows to read.
-            Defaults to 10000
+            Number of rows to read per chunk.
+            Defaults to 10000.
 
         num_threads:
-            Number of threads.
-            Default to 1.
+            Number of threads for stats calculation.
+            Defaults to 1.
+
+    Returns:
+        Dictionary containing matrix statistics and file byte offsets.
     """
     ptr = mattress.initialize(x)
     is_sparse = ptr.sparse()
