@@ -9,7 +9,7 @@ It includes a native Python client that allows you to query these datasets remot
 ```{toctree}
 :maxdepth: 2
 
-Overview <readme>
+Overview <tutorial>
 Contributions & Help <contributing>
 License <license>
 Authors <authors>
