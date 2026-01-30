@@ -3,9 +3,13 @@
 
 # wobbegong
 
-> Range-request ready Bioconductor objects
+wobbegong converts Bioconductor objects (like `BiocFrame`, `SummarizedExperiment`, and `SingleCellExperiment`) into a set of static files optimized for HTTP range requests.
 
-A longer description of your project goes here...
+It includes a native Python client that allows you to query these datasets remotely, fetching only the specific genes or metadata columns you need without downloading the entire file.
+
+> [!NOTE]
+>
+> Check out the R version of this package [here](https://github.com/kanaverse/wobbegong-R).
 
 ## Install
 
@@ -13,6 +17,50 @@ To get started, install the package from [PyPI](https://pypi.org/project/wobbego
 
 ```bash
 pip install wobbegong
+```
+
+## Quick Start
+
+### 1. Convert Data (`wobbegongify`)
+
+Use `wobbegongify` to convert your objects into static files.
+
+```python
+from wobbegong import wobbegongify
+from biocframe import BiocFrame
+from singlecellexperiment import SingleCellExperiment
+from scipy import sparse
+import numpy as np
+
+# 1. Create a SingleCellExperiment
+counts = sparse.random(100, 20, density=0.1, format="csr")
+pca = np.random.randn(20, 5)
+sce = SingleCellExperiment(
+    assays={"counts": counts},
+    reduced_dims={"PCA": pca}
+)
+
+# 2. Convert to wobbegong format
+wobbegongify(sce, "output/my_study")
+```
+
+### 2. Read Data (`load_wobbegong`)
+
+Use `wobbegong.load_wobbegong()` to read data from a local path **or** a remote URL. The client automatically handles HTTP range requests for you.
+
+```python
+import wobbegong
+
+# Load from a local directory (or URL)
+sce = wobbegong.load_wobbegong("output/my_study")
+
+# Access Assays (Row-wise access is optimized)
+counts = sce.get_assay("counts")
+gene_expression = counts.get_row(0)
+
+# Access Reduced Dimensions
+pca = sce.get_reduced_dim("PCA")
+pc1 = pca.get_column(0)
 ```
 
 <!-- biocsetup-notes -->

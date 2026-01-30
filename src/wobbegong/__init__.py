@@ -16,3 +16,4 @@ finally:
     del version, PackageNotFoundError
 
 from .core import wobbegongify
+from .client import load
