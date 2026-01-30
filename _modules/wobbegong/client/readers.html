@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>wobbegong.client.readers - wobbegong 0.0.3 documentation</title>
+        <title>wobbegong.client.readers - wobbegong 0.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">wobbegong 0.0.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">wobbegong 0.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">wobbegong 0.0.3 documentation</span>
+  <span class="sidebar-brand-text">wobbegong 0.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -191,7 +191,7 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributions &amp; Help</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
@@ -241,7 +241,6 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">mmap</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -273,7 +272,8 @@
 <span class="sd">                Summary dictionary. If None, it is read from &#39;summary.json&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span> <span class="o">=</span> <span class="n">accessor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">summary</span> <span class="o">=</span> <span class="n">summary</span> <span class="k">if</span> <span class="n">summary</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s2">&quot;summary.json&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summary</span> <span class="o">=</span> <span class="n">summary</span> <span class="k">if</span> <span class="n">summary</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s2">&quot;summary.json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;compression&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span></div>
 </div>
 
 
@@ -329,7 +329,7 @@
         <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colbytes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
         <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coltypes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coltypes</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="WobbegongDataFrame.get_row_names">
@@ -346,7 +346,7 @@
         <span class="n">start</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">colbytes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colbytes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span></div>
 </div>
 
 
@@ -401,7 +401,7 @@
         <span class="n">length</span> <span class="o">=</span> <span class="n">row_bytes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">]</span>
 
         <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_sparse_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">v_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;row_bytes&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
@@ -412,12 +412,12 @@
         <span class="n">start</span> <span class="o">=</span> <span class="n">prev_vals</span> <span class="o">+</span> <span class="n">prev_idxs</span>
 
         <span class="n">raw_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">v_bytes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">])</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_vals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_vals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
 
         <span class="n">start_idx</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">v_bytes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">]</span>
         <span class="n">raw_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="n">start_idx</span><span class="p">,</span> <span class="n">i_bytes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">])</span>
 
-        <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_idxs</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">)</span>
+        <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_idxs</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_map_wobbegong_type_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
@@ -447,7 +447,7 @@
         <span class="n">dtype</span> <span class="o">=</span> <span class="n">stats_info</span><span class="p">[</span><span class="s2">&quot;types&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
 
         <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(</span><span class="s2">&quot;stats&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_dense_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">:</span>
@@ -462,7 +462,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mm</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">args</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">length</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_sparse_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Worker for parallel sparse reading.</span>
@@ -477,10 +477,10 @@
         <span class="n">mm</span><span class="p">,</span> <span class="n">v_start</span><span class="p">,</span> <span class="n">v_len</span><span class="p">,</span> <span class="n">i_start</span><span class="p">,</span> <span class="n">i_len</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">args</span>
 
         <span class="n">raw_v</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">v_start</span> <span class="p">:</span> <span class="n">v_start</span> <span class="o">+</span> <span class="n">v_len</span><span class="p">]</span>
-        <span class="n">vals</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_v</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_v</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
 
         <span class="n">raw_i</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">i_start</span> <span class="p">:</span> <span class="n">i_start</span> <span class="o">+</span> <span class="n">i_len</span><span class="p">]</span>
-        <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_i</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">)</span>
+        <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_i</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">vals</span><span class="p">,</span> <span class="n">cols</span>
@@ -544,8 +544,9 @@
                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">batch_idxs</span><span class="p">:</span>
                                 <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">starts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ends</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                                 <span class="n">raw</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">s</span><span class="p">:</span><span class="n">e</span><span class="p">]</span>
-                                <span class="n">decompressed</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
-                                <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">decompressed</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy_dtype</span><span class="p">)</span>
+                                <span class="c1"># decompressed = _decompress(raw, self.compression_type)</span>
+                                <span class="c1"># out[i, :] = np.frombuffer(decompressed, dtype=numpy_dtype)</span>
+                                <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
 
                         <span class="nb">list</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_dense_batch</span><span class="p">,</span> <span class="n">batches</span><span class="p">))</span>
                         <span class="k">return</span> <span class="n">out</span>
@@ -566,8 +567,10 @@
                                 <span class="n">raw_v</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">s</span> <span class="p">:</span> <span class="n">s</span> <span class="o">+</span> <span class="n">v_len</span><span class="p">]</span>
                                 <span class="n">raw_i</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">s</span> <span class="o">+</span> <span class="n">v_len</span> <span class="p">:</span> <span class="n">s</span> <span class="o">+</span> <span class="n">v_len</span> <span class="o">+</span> <span class="n">i_len</span><span class="p">]</span>
 
-                                <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">raw_v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy_dtype</span><span class="p">)</span>
-                                <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">raw_i</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+                                <span class="c1"># vals = np.frombuffer(zlib.decompress(raw_v), dtype=numpy_dtype)</span>
+                                <span class="c1"># deltas = np.frombuffer(zlib.decompress(raw_i), dtype=np.int32)</span>
+                                <span class="n">vals</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
+                                <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_i</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
                                 <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
 
                                 <span class="n">batch_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
@@ -763,7 +766,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=47de8214"></script>
+</div><script src="../../../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

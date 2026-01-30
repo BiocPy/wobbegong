@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>wobbegong.client.utils - wobbegong 0.0.3 documentation</title>
+        <title>wobbegong.client.utils - wobbegong 0.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">wobbegong 0.0.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">wobbegong 0.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">wobbegong 0.0.3 documentation</span>
+  <span class="sidebar-brand-text">wobbegong 0.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -191,7 +191,7 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributions &amp; Help</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
@@ -237,9 +237,8 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for wobbegong.client.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
 <span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
@@ -273,7 +272,7 @@
 
 <div class="viewcode-block" id="read_integer">
 <a class="viewcode-back" href="../../../api/wobbegong.client.html#wobbegong.client.utils.read_integer">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_integer</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_integer</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read integer data from a file.</span>
 
 <span class="sd">    Args:</span>
@@ -286,17 +285,20 @@
 <span class="sd">        length:</span>
 <span class="sd">            Number of bytes to read.</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Numpy array of integers.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="read_double">
 <a class="viewcode-back" href="../../../api/wobbegong.client.html#wobbegong.client.utils.read_double">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_double</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_double</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read double (float) data from a file.</span>
 
 <span class="sd">    Args:</span>
@@ -309,17 +311,20 @@
 <span class="sd">        length:</span>
 <span class="sd">            Number of bytes to read.</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Numpy array of floats.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="read_boolean">
 <a class="viewcode-back" href="../../../api/wobbegong.client.html#wobbegong.client.utils.read_boolean">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_boolean</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_boolean</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read boolean data from a file.</span>
 
 <span class="sd">    Args:</span>
@@ -332,17 +337,20 @@
 <span class="sd">        length:</span>
 <span class="sd">            Number of bytes to read.</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Numpy array of booleans (or None/object).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;boolean&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="read_string">
 <a class="viewcode-back" href="../../../api/wobbegong.client.html#wobbegong.client.utils.read_string">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_string</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_string</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read string data from a file.</span>
 
 <span class="sd">    Args:</span>
@@ -355,17 +363,33 @@
 <span class="sd">        length:</span>
 <span class="sd">            Number of bytes to read.</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List of strings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_decompress</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">compression</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">compression</span> <span class="o">==</span> <span class="s2">&quot;lz4&quot;</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">lz4.block</span>
+
+        <span class="k">return</span> <span class="n">lz4</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">uncompressed_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
+
+        <span class="k">return</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="read_sparse_row_values">
 <a class="viewcode-back" href="../../../api/wobbegong.client.html#wobbegong.client.utils.read_sparse_row_values">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_sparse_row_values</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">vlen</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ilen</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reader_func</span><span class="p">:</span> <span class="nb">callable</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_sparse_row_values</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">vlen</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ilen</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reader_func</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read sparse row values.</span>
 
 <span class="sd">    Args:</span>
@@ -384,14 +408,17 @@
 <span class="sd">        reader_func:</span>
 <span class="sd">            Function to read the values (integer, double, etc.).</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Tuple of (values, indices).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">vals</span> <span class="o">=</span> <span class="n">reader_func</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">vlen</span><span class="p">)</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">reader_func</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">vlen</span><span class="p">,</span> <span class="n">compression</span><span class="p">)</span>
 
     <span class="c1"># indices are delta encoded integers</span>
     <span class="n">idx_bytes_raw</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">vlen</span><span class="p">,</span> <span class="n">ilen</span><span class="p">)</span>
-    <span class="n">idx_bytes</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">idx_bytes_raw</span><span class="p">)</span>
+    <span class="n">idx_bytes</span> <span class="o">=</span> <span class="n">_decompress</span><span class="p">(</span><span class="n">idx_bytes_raw</span><span class="p">,</span> <span class="n">compression</span><span class="p">)</span>
     <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">idx_bytes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
 
@@ -426,7 +453,7 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_bytes</span><span class="p">(</span><span class="n">raw_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">dtype_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_bytes</span><span class="p">(</span><span class="n">raw_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">dtype_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse raw bytes into numpy array or list of strings.</span>
 
 <span class="sd">    Args:</span>
@@ -436,10 +463,13 @@
 <span class="sd">        dtype_str:</span>
 <span class="sd">            Type string (&#39;integer&#39;, &#39;double&#39;, &#39;boolean&#39;, &#39;string&#39;).</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Parsed data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">decompressed</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">raw_bytes</span><span class="p">)</span>
+    <span class="n">decompressed</span> <span class="o">=</span> <span class="n">_decompress</span><span class="p">(</span><span class="n">raw_bytes</span><span class="p">,</span> <span class="n">compression</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">dtype_str</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">decompressed</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -508,7 +538,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=47de8214"></script>
+</div><script src="../../../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

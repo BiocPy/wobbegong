@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>wobbegong.core.utils - wobbegong 0.0.3 documentation</title>
+        <title>wobbegong.core.utils - wobbegong 0.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">wobbegong 0.0.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">wobbegong 0.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">wobbegong 0.0.3 documentation</span>
+  <span class="sidebar-brand-text">wobbegong 0.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -191,7 +191,7 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributions &amp; Help</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
@@ -239,7 +239,7 @@
           <h1>Source code for wobbegong.core.utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">delayedarray</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">mattress</span>
@@ -323,7 +323,7 @@
 
 <div class="viewcode-block" id="compress_and_write">
 <a class="viewcode-back" href="../../../api/wobbegong.core.html#wobbegong.core.utils.compress_and_write">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">data_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">data_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use zlib to compress and write data to file.</span>
 
 <span class="sd">    Args:</span>
@@ -333,10 +333,21 @@
 <span class="sd">        data_bytes:</span>
 <span class="sd">            Data to write (in bytes).</span>
 
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Length of the compressed data written.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">compressed</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">compression</span> <span class="o">==</span> <span class="s2">&quot;lz4&quot;</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">lz4.block</span>
+
+        <span class="n">compressed</span> <span class="o">=</span> <span class="n">lz4</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">,</span> <span class="n">store_size</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
+
+        <span class="n">compressed</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span>
+
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span></div>
 
@@ -344,7 +355,9 @@
 
 <div class="viewcode-block" id="dump_list_of_vectors">
 <a class="viewcode-back" href="../../../api/wobbegong.core.html#wobbegong.core.utils.dump_list_of_vectors">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dump_list_of_vectors</span><span class="p">(</span><span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dump_list_of_vectors</span><span class="p">(</span>
+    <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a list of vectors to disk.</span>
 
 <span class="sd">    Args:</span>
@@ -356,6 +369,9 @@
 
 <span class="sd">        filepath:</span>
 <span class="sd">            Path to write the data.</span>
+
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of compressed sizes for each column.</span>
@@ -378,7 +394,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">raw_bytes</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
 
-            <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">raw_bytes</span><span class="p">))</span>
+            <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">raw_bytes</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">sizes</span></div>
 
@@ -386,7 +402,14 @@
 
 <div class="viewcode-block" id="dump_matrix">
 <a class="viewcode-back" href="../../../api/wobbegong.core.html#wobbegong.core.utils.dump_matrix">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dump_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">type_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">num_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dump_matrix</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">type_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+    <span class="n">num_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">compression</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lz4&quot;</span><span class="p">,</span> <span class="s2">&quot;zlib&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zlib&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Uses mattress to initialize the matrix and iterate over rows.</span>
 
 <span class="sd">    Calculates stats and writes compressed rows.</span>
@@ -409,6 +432,9 @@
 <span class="sd">        num_threads:</span>
 <span class="sd">            Number of threads for stats calculation.</span>
 <span class="sd">            Defaults to 1.</span>
+
+<span class="sd">        compression:</span>
+<span class="sd">            Compression method to use, either &#39;lz4&#39; or &#39;zlib&#39; (default).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dictionary containing matrix statistics and file byte offsets.</span>
@@ -452,15 +478,15 @@
                     <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">col_nnz</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 
-                    <span class="n">vb</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
+                    <span class="n">vb</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
                     <span class="n">row_bytes_val</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vb</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                         <span class="n">deltas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="n">ib</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">deltas</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
+                        <span class="n">ib</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">deltas</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">ib</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                        <span class="n">ib</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
                     <span class="n">row_bytes_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ib</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -475,7 +501,7 @@
                 <span class="n">col_nnz</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nz_mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                    <span class="n">b</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">chunk</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
+                    <span class="n">b</span> <span class="o">=</span> <span class="n">compress_and_write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">chunk</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(),</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
                     <span class="n">row_bytes_dense</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 
     <span class="n">r_sums</span> <span class="o">=</span> <span class="n">ptr</span><span class="o">.</span><span class="n">row_sums</span><span class="p">(</span><span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">)</span>
@@ -524,7 +550,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=47de8214"></script>
+</div><script src="../../../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="prev" title="wobbegong.client package" href="wobbegong.client.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>wobbegong.core package - wobbegong 0.0.3 documentation</title>
+        <title>wobbegong.core package - wobbegong 0.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -162,7 +162,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">wobbegong 0.0.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">wobbegong 0.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -183,7 +183,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">wobbegong 0.0.3 documentation</span>
+  <span class="sidebar-brand-text">wobbegong 0.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -192,7 +192,7 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributions &amp; Help</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
@@ -252,13 +252,14 @@
 <span id="wobbegong-core-utils-module"></span><h2>wobbegong.core.utils module<a class="headerlink" href="#module-wobbegong.core.utils" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="wobbegong.core.utils.compress_and_write">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.utils.</span></span><span class="sig-name descname"><span class="pre">compress_and_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/utils.html#compress_and_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.utils.compress_and_write" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.utils.</span></span><span class="sig-name descname"><span class="pre">compress_and_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/utils.html#compress_and_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.utils.compress_and_write" title="Link to this definition">¶</a></dt>
 <dd><p>Use zlib to compress and write data to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>f</strong> – File writer object.</p></li>
 <li><p><strong>data_bytes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#bytes" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span>) – Data to write (in bytes).</p></li>
+<li><p><strong>compression</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'lz4'</span></code>, <code class="docutils literal notranslate"><span class="pre">'zlib'</span></code>]</span>) – Compression method to use, either ‘lz4’ or ‘zlib’ (default).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -272,7 +273,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wobbegong.core.utils.dump_list_of_vectors">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.utils.</span></span><span class="sig-name descname"><span class="pre">dump_list_of_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/utils.html#dump_list_of_vectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.utils.dump_list_of_vectors" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.utils.</span></span><span class="sig-name descname"><span class="pre">dump_list_of_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/utils.html#dump_list_of_vectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.utils.dump_list_of_vectors" title="Link to this definition">¶</a></dt>
 <dd><p>Write a list of vectors to disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -280,6 +281,7 @@
 <li><p><strong>columns</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – List of column vectors (arrays) to write.</p></li>
 <li><p><strong>types</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – List identifying the type for each column.</p></li>
 <li><p><strong>filepath</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Path to write the data.</p></li>
+<li><p><strong>compression</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'lz4'</span></code>, <code class="docutils literal notranslate"><span class="pre">'zlib'</span></code>]</span>) – Compression method to use, either ‘lz4’ or ‘zlib’ (default).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -293,7 +295,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wobbegong.core.utils.dump_matrix">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.utils.</span></span><span class="sig-name descname"><span class="pre">dump_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/utils.html#dump_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.utils.dump_matrix" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.utils.</span></span><span class="sig-name descname"><span class="pre">dump_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/utils.html#dump_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.utils.dump_matrix" title="Link to this definition">¶</a></dt>
 <dd><p>Uses mattress to initialize the matrix and iterate over rows.</p>
 <p>Calculates stats and writes compressed rows.</p>
 <dl class="field-list simple">
@@ -307,6 +309,7 @@ supported matrix input types.</p></li>
 Defaults to 10000.</p></li>
 <li><p><strong>num_threads</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of threads for stats calculation.
 Defaults to 1.</p></li>
+<li><p><strong>compression</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'lz4'</span></code>, <code class="docutils literal notranslate"><span class="pre">'zlib'</span></code>]</span>) – Compression method to use, either ‘lz4’ or ‘zlib’ (default).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -337,25 +340,26 @@ Defaults to 1.</p></li>
 <span id="wobbegong-core-wobbegongify-module"></span><h2>wobbegong.core.wobbegongify module<a class="headerlink" href="#module-wobbegong.core.wobbegongify" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="wobbegong.core.wobbegongify.wobbegongify">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/wobbegongify.html#wobbegongify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.wobbegongify.wobbegongify" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wobbegong/core/wobbegongify.html#wobbegongify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wobbegong.core.wobbegongify.wobbegongify" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span></dt>
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span></dt>
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span></dt>
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span></dt>
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span></dt>
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">wobbegong.core.wobbegongify.</span></span><span class="sig-name descname"><span class="pre">wobbegongify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zlib'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Convert an object to the wobbegong format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Any" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – Object to save to disk.</p></li>
 <li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Path to store object.</p></li>
+<li><p><strong>compression</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'lz4'</span></code>, <code class="docutils literal notranslate"><span class="pre">'zlib'</span></code>]</span>) – Compression method to use, either ‘lz4’ or ‘zlib’ (default).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -442,7 +446,7 @@ Defaults to 1.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=47de8214"></script>
+</div><script src="../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
