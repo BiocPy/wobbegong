@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 
 import numpy as np
 from biocframe import BiocFrame
@@ -12,7 +13,7 @@ __license__ = "MIT"
 
 
 @wobbegongify.register
-def wobbegongify_frame(x: BiocFrame, path: str) -> None:
+def wobbegongify_frame(x: BiocFrame, path: str, compression: Literal["lz4", "zlib"] = "zlib") -> None:
     """Convert a `BiocFrame` object to the wobbegong format.
 
     Stores data in columnar format to quickly retrieve an entire column.
@@ -23,6 +24,9 @@ def wobbegongify_frame(x: BiocFrame, path: str) -> None:
 
         path:
             Path to store object.
+
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
     """
     if not os.path.exists(path):
         os.makedirs(path)
@@ -32,6 +36,7 @@ def wobbegongify_frame(x: BiocFrame, path: str) -> None:
         "byte_order": get_byte_order(),
         "row_count": x.shape[0],
         "has_row_names": x.row_names is not None,
+        "compression": compression
     }
 
     columns = []
@@ -55,7 +60,7 @@ def wobbegongify_frame(x: BiocFrame, path: str) -> None:
         types.append("string")
 
     con_path = os.path.join(path, "content")
-    bytes_list = dump_list_of_vectors(columns, types, con_path)
+    bytes_list = dump_list_of_vectors(columns, types, con_path, compression=compression)
 
     summary["columns"] = {"names": list(_colnames), "types": types[: len(_colnames)], "bytes": bytes_list}
     _write_json(summary, os.path.join(path, "summary.json"))

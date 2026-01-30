@@ -40,19 +40,22 @@ sce = SingleCellExperiment(
     reduced_dims={"PCA": pca}
 )
 
-# 2. Convert to wobbegong format
+# 2. Convert to wobbegong format (defaults to zlib compression)
 wobbegongify(sce, "output/my_study")
+
+# OR use lz4 compression
+wobbegongify(sce, "output/my_study", compression = "lz4")
 ```
 
-### 2. Read Data (`load_wobbegong`)
+### 2. Read Data (`load`)
 
-Use `wobbegong.load_wobbegong()` to read data from a local path **or** a remote URL. The client automatically handles HTTP range requests for you.
+Use `wobbegong.load()` to read data from a local path **or** a remote URL. The client automatically handles HTTP range requests for you.
 
 ```python
 import wobbegong
 
 # Load from a local directory (or URL)
-sce = wobbegong.load_wobbegong("output/my_study")
+sce = wobbegong.load("output/my_study")
 
 # Access Assays (Row-wise access is optimized)
 counts = sce.get_assay("counts")

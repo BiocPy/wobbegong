@@ -21,14 +21,15 @@ def temp_dir(tmp_path):
     return str(d)
 
 
-def test_summarized_experiment(temp_dir):
+@pytest.mark.parametrize("compression", ["zlib", "lz4"])
+def test_summarized_experiment(temp_dir, compression):
     counts = np.random.randint(0, 10, (10, 5)).astype(np.int32)
     row_data = BiocFrame({"gene_id": [f"G{i}" for i in range(10)]})
     col_data = BiocFrame({"sample_id": [f"S{i}" for i in range(5)]})
 
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data, column_data=col_data)
 
-    wobbegongify(se, temp_dir)
+    wobbegongify(se, temp_dir, compression)
 
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
@@ -39,6 +40,7 @@ def test_summarized_experiment(temp_dir):
     assert summary["has_row_data"] is True
     assert summary["has_column_data"] is True
     assert summary["assay_names"] == ["counts"]
+    assert summary["compression"] == compression
 
     assert os.path.exists(os.path.join(temp_dir, "row_data", "summary.json"))
     assert os.path.exists(os.path.join(temp_dir, "column_data", "summary.json"))

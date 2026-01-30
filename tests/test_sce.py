@@ -22,19 +22,21 @@ def temp_dir(tmp_path):
     return str(d)
 
 
-def test_sce_red_dims(temp_dir):
+@pytest.mark.parametrize("compression", ["zlib", "lz4"])
+def test_sce_red_dims(temp_dir, compression):
     counts = np.zeros((10, 5), dtype=np.int32)
     pca = np.random.randn(5, 2)
     tsne = np.random.randn(5, 2)
 
     sce = SingleCellExperiment(assays={"counts": counts}, reduced_dims={"PCA": pca, "TSNE": tsne})
 
-    wobbegongify(sce, temp_dir)
+    wobbegongify(sce, temp_dir, compression)
 
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
 
     assert summary["object"] == "single_cell_experiment"
+    assert summary["compression"] == compression
     assert "PCA" in summary["reduced_dimension_names"]
     assert "TSNE" in summary["reduced_dimension_names"]
 
@@ -50,18 +52,19 @@ def test_sce_red_dims(temp_dir):
     con_path = os.path.join(pca_dir, "content")
     col1_bytes = pca_summ["columns"]["bytes"][0]
 
-    res = read_double(con_path, 0, col1_bytes)
+    res = read_double(con_path, 0, col1_bytes, compression)
     np.testing.assert_allclose(res, pca[:, 0])
 
 
-def test_sce_alt_exps(temp_dir):
+@pytest.mark.parametrize("compression", ["zlib", "lz4"])
+def test_sce_alt_exps(temp_dir, compression):
     counts = np.zeros((10, 5), dtype=np.int32)
     alt_counts = np.ones((3, 5), dtype=np.int32)
     alt = SingleCellExperiment(assays={"counts": alt_counts})
 
     sce = SingleCellExperiment(assays={"counts": counts}, alternative_experiments={"Spikes": alt})
 
-    wobbegongify(sce, temp_dir)
+    wobbegongify(sce, temp_dir, compression)
 
     alt_dir = os.path.join(temp_dir, "alternative_experiments", "0")
     assert os.path.exists(os.path.join(alt_dir, "summary.json"))

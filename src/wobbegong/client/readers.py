@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import mmap
 import os
-import zlib
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
@@ -31,6 +30,7 @@ class WobbegongBase:
         """
         self.accessor = accessor
         self.summary = summary if summary else self.accessor.read_json("summary.json")
+        self.compression_type = self.summary.get("compression", "zlib")
 
 
 class WobbegongDataFrame(WobbegongBase):
@@ -77,7 +77,7 @@ class WobbegongDataFrame(WobbegongBase):
         length = self.colbytes[idx]
 
         raw = self.accessor.read_bytes("content", start, length)
-        return _parse_bytes(raw, self.coltypes[idx])
+        return _parse_bytes(raw, self.coltypes[idx], compression=self.compression_type)
 
     def get_row_names(self) -> np.ndarray | list | None:
         """Get row names if available.
@@ -91,7 +91,7 @@ class WobbegongDataFrame(WobbegongBase):
         start = sum(self.colbytes[:-1])
         length = self.colbytes[-1]
         raw = self.accessor.read_bytes("content", start, length)
-        return _parse_bytes(raw, "string")
+        return _parse_bytes(raw, "string", compression=self.compression_type)
 
 
 class WobbegongMatrix(WobbegongBase):
@@ -136,7 +136,7 @@ class WobbegongMatrix(WobbegongBase):
         length = row_bytes[row_idx]
 
         raw = self.accessor.read_bytes("content", start, length)
-        return _parse_bytes(raw, self.dtype)
+        return _parse_bytes(raw, self.dtype, compression=self.compression_type)
 
     def _get_sparse_row(self, row_idx) -> np.ndarray:
         v_bytes = self.summary["row_bytes"]["value"]
@@ -147,12 +147,12 @@ class WobbegongMatrix(WobbegongBase):
         start = prev_vals + prev_idxs
 
         raw_vals = self.accessor.read_bytes("content", start, v_bytes[row_idx])
-        values = _parse_bytes(raw_vals, self.dtype)
+        values = _parse_bytes(raw_vals, self.dtype, compression=self.compression_type)
 
         start_idx = start + v_bytes[row_idx]
         raw_idxs = self.accessor.read_bytes("content", start_idx, i_bytes[row_idx])
 
-        deltas = _parse_bytes(raw_idxs, "integer")
+        deltas = _parse_bytes(raw_idxs, "integer", compression=self.compression_type)
         indices = np.cumsum(deltas)
 
         out = np.zeros(self.shape[1], dtype=_map_wobbegong_type_to_numpy(self.dtype))
@@ -180,7 +180,7 @@ class WobbegongMatrix(WobbegongBase):
         dtype = stats_info["types"][idx]
 
         raw = self.accessor.read_bytes("stats", start, length)
-        return _parse_bytes(raw, dtype)
+        return _parse_bytes(raw, dtype, compression=self.compression_type)
 
     def _process_dense_chunk(self, args: tuple) -> np.ndarray | list:
         """Worker for parallel dense reading.
@@ -194,7 +194,7 @@ class WobbegongMatrix(WobbegongBase):
         """
         mm, start, length, dtype = args
         raw = mm[start : start + length]
-        return _parse_bytes(raw, dtype)
+        return _parse_bytes(raw, dtype, compression=self.compression_type)
 
     def _process_sparse_chunk(self, args: tuple) -> tuple[np.ndarray | list, np.ndarray]:
         """Worker for parallel sparse reading.
@@ -209,10 +209,10 @@ class WobbegongMatrix(WobbegongBase):
         mm, v_start, v_len, i_start, i_len, dtype = args
 
         raw_v = mm[v_start : v_start + v_len]
-        vals = _parse_bytes(raw_v, dtype)
+        vals = _parse_bytes(raw_v, dtype, compression=self.compression_type)
 
         raw_i = mm[i_start : i_start + i_len]
-        deltas = _parse_bytes(raw_i, "integer")
+        deltas = _parse_bytes(raw_i, "integer", compression=self.compression_type)
         cols = np.cumsum(deltas)
 
         return vals, cols
@@ -274,8 +274,9 @@ class WobbegongMatrix(WobbegongBase):
                             for i in batch_idxs:
                                 s, e = starts[i], ends[i]
                                 raw = mm[s:e]
-                                decompressed = zlib.decompress(raw)
-                                out[i, :] = np.frombuffer(decompressed, dtype=numpy_dtype)
+                                # decompressed = _decompress(raw, self.compression_type)
+                                # out[i, :] = np.frombuffer(decompressed, dtype=numpy_dtype)
+                                out[i, :] = _parse_bytes(raw, self.dtype, compression=self.compression_type)
 
                         list(executor.map(process_dense_batch, batches))
                         return out
@@ -296,8 +297,10 @@ class WobbegongMatrix(WobbegongBase):
                                 raw_v = mm[s : s + v_len]
                                 raw_i = mm[s + v_len : s + v_len + i_len]
 
-                                vals = np.frombuffer(zlib.decompress(raw_v), dtype=numpy_dtype)
-                                deltas = np.frombuffer(zlib.decompress(raw_i), dtype=np.int32)
+                                # vals = np.frombuffer(zlib.decompress(raw_v), dtype=numpy_dtype)
+                                # deltas = np.frombuffer(zlib.decompress(raw_i), dtype=np.int32)
+                                vals = _parse_bytes(raw_v, self.dtype, compression=self.compression_type)
+                                deltas = _parse_bytes(raw_i, "integer", compression=self.compression_type)
                                 cols = np.cumsum(deltas)
 
                                 batch_data.append(vals)

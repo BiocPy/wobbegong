@@ -1,6 +1,5 @@
-import zlib
-
 import numpy as np
+from typing import Literal
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
@@ -29,7 +28,7 @@ def read_chunk(path: str, start: int, length: int) -> bytes:
     return compressed
 
 
-def read_integer(path: str, start: int, length: int) -> np.ndarray:
+def read_integer(path: str, start: int, length: int, compression: Literal["lz4", "zlib"] = "zlib") -> np.ndarray:
     """Read integer data from a file.
 
     Args:
@@ -42,14 +41,17 @@ def read_integer(path: str, start: int, length: int) -> np.ndarray:
         length:
             Number of bytes to read.
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         Numpy array of integers.
     """
     data = read_chunk(path, start, length)
-    return _parse_bytes(data, "integer")
+    return _parse_bytes(data, "integer", compression=compression)
 
 
-def read_double(path: str, start: int, length: int) -> np.ndarray:
+def read_double(path: str, start: int, length: int, compression: Literal["lz4", "zlib"] = "zlib") -> np.ndarray:
     """Read double (float) data from a file.
 
     Args:
@@ -62,14 +64,17 @@ def read_double(path: str, start: int, length: int) -> np.ndarray:
         length:
             Number of bytes to read.
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         Numpy array of floats.
     """
     data = read_chunk(path, start, length)
-    return _parse_bytes(data, "double")
+    return _parse_bytes(data, "double", compression=compression)
 
 
-def read_boolean(path: str, start: int, length: int) -> np.ndarray:
+def read_boolean(path: str, start: int, length: int, compression: Literal["lz4", "zlib"] = "zlib") -> np.ndarray:
     """Read boolean data from a file.
 
     Args:
@@ -82,14 +87,17 @@ def read_boolean(path: str, start: int, length: int) -> np.ndarray:
         length:
             Number of bytes to read.
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         Numpy array of booleans (or None/object).
     """
     data = read_chunk(path, start, length)
-    return _parse_bytes(data, "boolean")
+    return _parse_bytes(data, "boolean", compression=compression)
 
 
-def read_string(path: str, start: int, length: int) -> list[str]:
+def read_string(path: str, start: int, length: int, compression: Literal["lz4", "zlib"] = "zlib") -> list[str]:
     """Read string data from a file.
 
     Args:
@@ -102,14 +110,30 @@ def read_string(path: str, start: int, length: int) -> list[str]:
         length:
             Number of bytes to read.
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         List of strings.
     """
     data = read_chunk(path, start, length)
-    return _parse_bytes(data, "string")
+    return _parse_bytes(data, "string", compression=compression)
 
 
-def read_sparse_row_values(path: str, start: int, vlen: int, ilen: int, reader_func: callable):
+def _decompress(data, compression):
+    if compression == "lz4":
+        import lz4.block
+
+        return lz4.block.decompress(data, uncompressed_size=len(data) * 255)
+    else:
+        import zlib
+
+        return zlib.decompress(data)
+
+
+def read_sparse_row_values(
+    path: str, start: int, vlen: int, ilen: int, reader_func: callable, compression: Literal["lz4", "zlib"] = "zlib"
+):
     """Read sparse row values.
 
     Args:
@@ -128,14 +152,17 @@ def read_sparse_row_values(path: str, start: int, vlen: int, ilen: int, reader_f
         reader_func:
             Function to read the values (integer, double, etc.).
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         Tuple of (values, indices).
     """
-    vals = reader_func(path, start, vlen)
+    vals = reader_func(path, start, vlen, compression)
 
     # indices are delta encoded integers
     idx_bytes_raw = read_chunk(path, start + vlen, ilen)
-    idx_bytes = zlib.decompress(idx_bytes_raw)
+    idx_bytes = _decompress(idx_bytes_raw, compression)
     deltas = np.frombuffer(idx_bytes, dtype=np.int32)
     indices = np.cumsum(deltas)
 
@@ -166,7 +193,7 @@ def reconstruct_sparse_row(vals: np.ndarray, indices: np.ndarray, ncols: int, dt
     return out
 
 
-def _parse_bytes(raw_bytes: bytes, dtype_str: str) -> np.ndarray | list[str]:
+def _parse_bytes(raw_bytes: bytes, dtype_str: str, compression: Literal["lz4", "zlib"] = "zlib") -> np.ndarray | list[str]:
     """Parse raw bytes into numpy array or list of strings.
 
     Args:
@@ -176,10 +203,13 @@ def _parse_bytes(raw_bytes: bytes, dtype_str: str) -> np.ndarray | list[str]:
         dtype_str:
             Type string ('integer', 'double', 'boolean', 'string').
 
+        compression:
+            Compression method to use, either 'lz4' or 'zlib' (default).
+
     Returns:
         Parsed data.
     """
-    decompressed = zlib.decompress(raw_bytes)
+    decompressed = _decompress(raw_bytes, compression)
 
     if dtype_str == "integer":
         return np.frombuffer(decompressed, dtype=np.int32)

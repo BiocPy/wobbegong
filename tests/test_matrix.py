@@ -31,7 +31,7 @@ def check_stats(mat, path, summary):
 
     def get_stat(name, reader):
         idx = stats_info["names"].index(name)
-        return reader(path, starts[idx], bytes_lens[idx])
+        return reader(path, starts[idx], bytes_lens[idx], compression=summary["compression"])
 
     if summary["type"] == "double":
         rsums = get_stat("row_sum", read_double)
@@ -57,29 +57,32 @@ def check_stats(mat, path, summary):
     np.testing.assert_array_equal(cnnz, real_cnnz)
 
 
-def test_dense_integer_matrix(temp_dir):
+@pytest.mark.parametrize("compression", ["zlib", "lz4"])
+def test_dense_integer_matrix(temp_dir, compression):
     mat = np.random.randint(0, 10, size=(10, 5)).astype(np.int32)
     os.makedirs(temp_dir, exist_ok=True)
-    wobbegongify(mat, temp_dir)
+    wobbegongify(mat, temp_dir, compression)
 
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
 
     assert summary["format"] == "dense"
     assert summary["type"] == "integer"
+    assert summary["compression"] == compression
 
     con_path = os.path.join(temp_dir, "content")
     row_bytes = summary["row_bytes"]
     starts = [0] + list(np.cumsum(row_bytes)[:-1])
 
     for r in [0, 4, 9]:
-        res = read_integer(con_path, starts[r], row_bytes[r])
+        res = read_integer(con_path, starts[r], row_bytes[r], compression)
         np.testing.assert_array_equal(res, mat[r, :])
 
     check_stats(mat, os.path.join(temp_dir, "stats"), summary)
 
 
-def test_sparse_double_matrix(temp_dir):
+@pytest.mark.parametrize("compression", ["zlib", "lz4"])
+def test_sparse_double_matrix(temp_dir, compression):
     mat = sparse.random(20, 10, density=0.2, format="csr").astype(np.float64)
 
     if os.path.exists(temp_dir):
@@ -88,13 +91,14 @@ def test_sparse_double_matrix(temp_dir):
         shutil.rmtree(temp_dir)
     os.makedirs(temp_dir)
 
-    wobbegongify(mat, temp_dir)
+    wobbegongify(mat, temp_dir, compression)
 
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
 
     assert summary["format"] == "sparse"
     assert summary["type"] == "double"
+    assert summary["compression"] == compression
 
     con_path = os.path.join(temp_dir, "content")
     v_bytes = summary["row_bytes"]["value"]
@@ -112,7 +116,7 @@ def test_sparse_double_matrix(temp_dir):
         i_len = i_bytes[r]
         start_pos = offsets[r * 2]
 
-        vals, indices = read_sparse_row_values(con_path, start_pos, v_len, i_len, read_double)
+        vals, indices = read_sparse_row_values(con_path, start_pos, v_len, i_len, read_double, compression)
         row_recon = reconstruct_sparse_row(vals, indices, 10, np.float64)
         row_orig = mat[r, :].toarray().flatten()
 

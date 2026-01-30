@@ -21,7 +21,8 @@ def temp_dir(tmp_path):
     return str(d)
 
 
-def test_basic_dataframe(temp_dir):
+@pytest.mark.parametrize("compression", ["zlib", "lz4"])
+def test_basic_dataframe(temp_dir, compression):
     df = BiocFrame(
         {
             "A": [1, 2, 3, 4, 5],
@@ -31,7 +32,7 @@ def test_basic_dataframe(temp_dir):
         }
     )
 
-    wobbegongify(df, temp_dir)
+    wobbegongify(df, temp_dir, compression)
 
     with open(os.path.join(temp_dir, "summary.json")) as f:
         summary = json.load(f)
@@ -40,22 +41,23 @@ def test_basic_dataframe(temp_dir):
     assert summary["columns"]["types"] == ["integer", "double", "string", "boolean"]
     assert summary["row_count"] == 5
     assert not summary["has_row_names"]
+    assert summary["compression"] == compression
 
     con_path = os.path.join(temp_dir, "content")
     bytes_lens = summary["columns"]["bytes"]
     ends = np.cumsum(bytes_lens)
     starts = [0] + list(ends[:-1])
 
-    res_a = read_integer(con_path, starts[0], bytes_lens[0])
+    res_a = read_integer(con_path, starts[0], bytes_lens[0], compression)
     np.testing.assert_array_equal(res_a, df.column("A"))
 
-    res_b = read_double(con_path, starts[1], bytes_lens[1])
+    res_b = read_double(con_path, starts[1], bytes_lens[1], compression)
     np.testing.assert_array_almost_equal(res_b, df.column("B"))
 
-    res_c = read_string(con_path, starts[2], bytes_lens[2])
+    res_c = read_string(con_path, starts[2], bytes_lens[2], compression)
     assert res_c == df.column("C")
 
-    res_d = read_boolean(con_path, starts[3], bytes_lens[3])
+    res_d = read_boolean(con_path, starts[3], bytes_lens[3], compression)
     np.testing.assert_array_equal(res_d, df.column("D"))
 
 
