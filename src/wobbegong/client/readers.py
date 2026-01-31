@@ -8,7 +8,7 @@ import numpy as np
 from scipy import sparse
 
 from ._base import Accessor, HttpAccessor, LocalAccessor
-from .utils import _map_wobbegong_type_to_numpy, _parse_bytes
+from .utils import _map_wobbegong_type_to_numpy, _parse_bytes, read_chunk
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
@@ -217,7 +217,9 @@ class WobbegongMatrix(WobbegongBase):
 
         return vals, cols
 
-    def get_rows(self, row_indices: slice | list | np.ndarray) -> np.ndarray | sparse.csr_matrix:
+    def get_rows(
+        self, row_indices: slice | list | np.ndarray, num_threads: int = None
+    ) -> np.ndarray | sparse.csr_matrix:
         """Retrieves multiple rows efficiently using mmap and parallel decompression.
 
         Note: Currently only supports local files.
@@ -234,12 +236,81 @@ class WobbegongMatrix(WobbegongBase):
         if not isinstance(self.accessor, LocalAccessor):
             raise NotImplementedError("get_rows is currently only supported for local files.")
 
-        if isinstance(row_indices, slice):
-            row_indices = range(*row_indices.indices(self.shape[0]))
+        numpy_dtype = _map_wobbegong_type_to_numpy(self.dtype)
+
+        # contiguous blocks
+        if isinstance(row_indices, slice) and (row_indices.step is None or row_indices.step == 1):
+            start_row, stop_row, _ = row_indices.indices(self.shape[0])
+            count = stop_row - start_row
+            if count <= 0:
+                return np.zeros((0, self.shape[1]), dtype=numpy_dtype)
+
+            if self.format == "dense":
+                row_sizes = np.array(self.summary["row_bytes"])
+                byte_start = np.sum(row_sizes[:start_row])
+                byte_length = np.sum(row_sizes[start_row:stop_row])
+
+                content_path = os.path.join(self.accessor.base_path, "content")
+                blob = read_chunk(content_path, byte_start, byte_length)
+
+                out = np.zeros((count, self.shape[1]), dtype=numpy_dtype)
+                current_offset = 0
+                relevant_sizes = row_sizes[start_row:stop_row]
+
+                for i, size in enumerate(relevant_sizes):
+                    chunk = blob[current_offset : current_offset + size]
+                    current_offset += size
+                    out[i, :] = _parse_bytes(chunk, self.dtype, compression=self.compression_type)
+
+                return out
+            else:
+                v_sizes = np.array(self.summary["row_bytes"]["value"])
+                i_sizes = np.array(self.summary["row_bytes"]["index"])
+
+                prev_vals = np.sum(v_sizes[:start_row])
+                prev_idxs = np.sum(i_sizes[:start_row])
+                byte_start = prev_vals + prev_idxs
+
+                target_vals = np.sum(v_sizes[start_row:stop_row])
+                target_idxs = np.sum(i_sizes[start_row:stop_row])
+                byte_length = target_vals + target_idxs
+
+                content_path = os.path.join(self.accessor.base_path, "content")
+                blob = read_chunk(content_path, byte_start, byte_length)
+
+                current_offset = 0
+                all_data = []
+                all_indices = []
+                all_indptr = [0]
+
+                rel_v_sizes = v_sizes[start_row:stop_row]
+                rel_i_sizes = i_sizes[start_row:stop_row]
+
+                for i in range(count):
+                    v_sz = rel_v_sizes[i]
+                    i_sz = rel_i_sizes[i]
+
+                    raw_v = blob[current_offset : current_offset + v_sz]
+                    raw_i = blob[current_offset + v_sz : current_offset + v_sz + i_sz]
+                    current_offset += v_sz + i_sz
+
+                    vals = _parse_bytes(raw_v, self.dtype, compression=self.compression_type)
+                    deltas = _parse_bytes(raw_i, "integer", compression=self.compression_type)
+                    cols = np.cumsum(deltas)
+
+                    all_data.append(vals)
+                    all_indices.append(cols)
+                    all_indptr.append(all_indptr[-1] + len(vals))
+
+                return sparse.csr_matrix(
+                    (np.concatenate(all_data), np.concatenate(all_indices), all_indptr),
+                    shape=(count, self.shape[1]),
+                    dtype=numpy_dtype,
+                )
 
         row_indices = np.array(row_indices)
         if len(row_indices) == 0:
-            return np.zeros((0, self.shape[1]), dtype=_map_wobbegong_type_to_numpy(self.dtype))
+            return np.zeros((0, self.shape[1]), dtype=numpy_dtype)
 
         if self.format == "dense":
             sizes = np.array(self.summary["row_bytes"])
@@ -258,12 +329,13 @@ class WobbegongMatrix(WobbegongBase):
             starts = offsets[row_indices * 2]
             ends = offsets[row_indices * 2 + 2]
 
-        numpy_dtype = _map_wobbegong_type_to_numpy(self.dtype)
         content_path = os.path.join(self.accessor.base_path, "content")
 
         with open(content_path, "rb") as f:
             with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
-                num_workers = min(os.cpu_count() or 4, len(row_indices) // 100 + 1)
+                num_workers = (
+                    min(os.cpu_count() or 4, len(row_indices) // 100 + 1) if num_threads is None else num_threads
+                )
                 batches = np.array_split(np.arange(len(row_indices)), num_workers)
 
                 with ThreadPoolExecutor(max_workers=num_workers) as executor:
@@ -274,8 +346,6 @@ class WobbegongMatrix(WobbegongBase):
                             for i in batch_idxs:
                                 s, e = starts[i], ends[i]
                                 raw = mm[s:e]
-                                # decompressed = _decompress(raw, self.compression_type)
-                                # out[i, :] = np.frombuffer(decompressed, dtype=numpy_dtype)
                                 out[i, :] = _parse_bytes(raw, self.dtype, compression=self.compression_type)
 
                         list(executor.map(process_dense_batch, batches))
@@ -297,8 +367,6 @@ class WobbegongMatrix(WobbegongBase):
                                 raw_v = mm[s : s + v_len]
                                 raw_i = mm[s + v_len : s + v_len + i_len]
 
-                                # vals = np.frombuffer(zlib.decompress(raw_v), dtype=numpy_dtype)
-                                # deltas = np.frombuffer(zlib.decompress(raw_i), dtype=np.int32)
                                 vals = _parse_bytes(raw_v, self.dtype, compression=self.compression_type)
                                 deltas = _parse_bytes(raw_i, "integer", compression=self.compression_type)
                                 cols = np.cumsum(deltas)
