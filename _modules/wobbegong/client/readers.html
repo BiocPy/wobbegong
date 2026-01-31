@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>wobbegong.client.readers - wobbegong 0.0.4 documentation</title>
+        <title>wobbegong.client.readers - wobbegong 0.0.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">wobbegong 0.0.4 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">wobbegong 0.0.5 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">wobbegong 0.0.4 documentation</span>
+  <span class="sidebar-brand-text">wobbegong 0.0.5 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -247,7 +247,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">sparse</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Accessor</span><span class="p">,</span> <span class="n">HttpAccessor</span><span class="p">,</span> <span class="n">LocalAccessor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_map_wobbegong_type_to_numpy</span><span class="p">,</span> <span class="n">_parse_bytes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_map_wobbegong_type_to_numpy</span><span class="p">,</span> <span class="n">_parse_bytes</span><span class="p">,</span> <span class="n">read_chunk</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
 <span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
@@ -487,7 +487,9 @@
 
 <div class="viewcode-block" id="WobbegongMatrix.get_rows">
 <a class="viewcode-back" href="../../../api/wobbegong.client.html#wobbegong.client.readers.WobbegongMatrix.get_rows">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_indices</span><span class="p">:</span> <span class="nb">slice</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rows</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">row_indices</span><span class="p">:</span> <span class="nb">slice</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves multiple rows efficiently using mmap and parallel decompression.</span>
 
 <span class="sd">        Note: Currently only supports local files.</span>
@@ -504,12 +506,81 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="p">,</span> <span class="n">LocalAccessor</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_rows is currently only supported for local files.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">row_indices</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
-            <span class="n">row_indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">row_indices</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">numpy_dtype</span> <span class="o">=</span> <span class="n">_map_wobbegong_type_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="c1"># contiguous blocks</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">row_indices</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">row_indices</span><span class="o">.</span><span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">row_indices</span><span class="o">.</span><span class="n">step</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">row_indices</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">stop_row</span> <span class="o">-</span> <span class="n">start_row</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy_dtype</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
+                <span class="n">row_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;row_bytes&quot;</span><span class="p">])</span>
+                <span class="n">byte_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">row_sizes</span><span class="p">[:</span><span class="n">start_row</span><span class="p">])</span>
+                <span class="n">byte_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">row_sizes</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">stop_row</span><span class="p">])</span>
+
+                <span class="n">content_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">base_path</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">)</span>
+                <span class="n">blob</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">content_path</span><span class="p">,</span> <span class="n">byte_start</span><span class="p">,</span> <span class="n">byte_length</span><span class="p">)</span>
+
+                <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy_dtype</span><span class="p">)</span>
+                <span class="n">current_offset</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">relevant_sizes</span> <span class="o">=</span> <span class="n">row_sizes</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">stop_row</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relevant_sizes</span><span class="p">):</span>
+                    <span class="n">chunk</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">current_offset</span> <span class="p">:</span> <span class="n">current_offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+                    <span class="n">current_offset</span> <span class="o">+=</span> <span class="n">size</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">out</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;row_bytes&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+                <span class="n">i_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;row_bytes&quot;</span><span class="p">][</span><span class="s2">&quot;index&quot;</span><span class="p">])</span>
+
+                <span class="n">prev_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v_sizes</span><span class="p">[:</span><span class="n">start_row</span><span class="p">])</span>
+                <span class="n">prev_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_sizes</span><span class="p">[:</span><span class="n">start_row</span><span class="p">])</span>
+                <span class="n">byte_start</span> <span class="o">=</span> <span class="n">prev_vals</span> <span class="o">+</span> <span class="n">prev_idxs</span>
+
+                <span class="n">target_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v_sizes</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">stop_row</span><span class="p">])</span>
+                <span class="n">target_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i_sizes</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">stop_row</span><span class="p">])</span>
+                <span class="n">byte_length</span> <span class="o">=</span> <span class="n">target_vals</span> <span class="o">+</span> <span class="n">target_idxs</span>
+
+                <span class="n">content_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">base_path</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">)</span>
+                <span class="n">blob</span> <span class="o">=</span> <span class="n">read_chunk</span><span class="p">(</span><span class="n">content_path</span><span class="p">,</span> <span class="n">byte_start</span><span class="p">,</span> <span class="n">byte_length</span><span class="p">)</span>
+
+                <span class="n">current_offset</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">all_data</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">all_indices</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">all_indptr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">rel_v_sizes</span> <span class="o">=</span> <span class="n">v_sizes</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">stop_row</span><span class="p">]</span>
+                <span class="n">rel_i_sizes</span> <span class="o">=</span> <span class="n">i_sizes</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">stop_row</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+                    <span class="n">v_sz</span> <span class="o">=</span> <span class="n">rel_v_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">i_sz</span> <span class="o">=</span> <span class="n">rel_i_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                    <span class="n">raw_v</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">current_offset</span> <span class="p">:</span> <span class="n">current_offset</span> <span class="o">+</span> <span class="n">v_sz</span><span class="p">]</span>
+                    <span class="n">raw_i</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">current_offset</span> <span class="o">+</span> <span class="n">v_sz</span> <span class="p">:</span> <span class="n">current_offset</span> <span class="o">+</span> <span class="n">v_sz</span> <span class="o">+</span> <span class="n">i_sz</span><span class="p">]</span>
+                    <span class="n">current_offset</span> <span class="o">+=</span> <span class="n">v_sz</span> <span class="o">+</span> <span class="n">i_sz</span>
+
+                    <span class="n">vals</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
+                    <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_i</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
+                    <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
+
+                    <span class="n">all_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+                    <span class="n">all_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+                    <span class="n">all_indptr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">all_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">))</span>
+
+                <span class="k">return</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">all_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">all_indices</span><span class="p">),</span> <span class="n">all_indptr</span><span class="p">),</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">numpy_dtype</span><span class="p">,</span>
+                <span class="p">)</span>
 
         <span class="n">row_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">row_indices</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_map_wobbegong_type_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy_dtype</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
             <span class="n">sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;row_bytes&quot;</span><span class="p">])</span>
@@ -528,12 +599,13 @@
             <span class="n">starts</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">row_indices</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>
             <span class="n">ends</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">row_indices</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">numpy_dtype</span> <span class="o">=</span> <span class="n">_map_wobbegong_type_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">content_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accessor</span><span class="o">.</span><span class="n">base_path</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">content_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">mmap</span><span class="o">.</span><span class="n">mmap</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">mmap</span><span class="o">.</span><span class="n">ACCESS_READ</span><span class="p">)</span> <span class="k">as</span> <span class="n">mm</span><span class="p">:</span>
-                <span class="n">num_workers</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">4</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_indices</span><span class="p">)</span> <span class="o">//</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">num_workers</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">min</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">4</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_indices</span><span class="p">)</span> <span class="o">//</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">num_threads</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">num_threads</span>
+                <span class="p">)</span>
                 <span class="n">batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row_indices</span><span class="p">)),</span> <span class="n">num_workers</span><span class="p">)</span>
 
                 <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
@@ -544,8 +616,6 @@
                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">batch_idxs</span><span class="p">:</span>
                                 <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">starts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ends</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                                 <span class="n">raw</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">s</span><span class="p">:</span><span class="n">e</span><span class="p">]</span>
-                                <span class="c1"># decompressed = _decompress(raw, self.compression_type)</span>
-                                <span class="c1"># out[i, :] = np.frombuffer(decompressed, dtype=numpy_dtype)</span>
                                 <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
 
                         <span class="nb">list</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_dense_batch</span><span class="p">,</span> <span class="n">batches</span><span class="p">))</span>
@@ -567,8 +637,6 @@
                                 <span class="n">raw_v</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">s</span> <span class="p">:</span> <span class="n">s</span> <span class="o">+</span> <span class="n">v_len</span><span class="p">]</span>
                                 <span class="n">raw_i</span> <span class="o">=</span> <span class="n">mm</span><span class="p">[</span><span class="n">s</span> <span class="o">+</span> <span class="n">v_len</span> <span class="p">:</span> <span class="n">s</span> <span class="o">+</span> <span class="n">v_len</span> <span class="o">+</span> <span class="n">i_len</span><span class="p">]</span>
 
-                                <span class="c1"># vals = np.frombuffer(zlib.decompress(raw_v), dtype=numpy_dtype)</span>
-                                <span class="c1"># deltas = np.frombuffer(zlib.decompress(raw_i), dtype=np.int32)</span>
                                 <span class="n">vals</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
                                 <span class="n">deltas</span> <span class="o">=</span> <span class="n">_parse_bytes</span><span class="p">(</span><span class="n">raw_i</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_type</span><span class="p">)</span>
                                 <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
@@ -766,7 +834,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=8c5712d9"></script>
+</div><script src="../../../_static/documentation_options.js?v=282f96c0"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
