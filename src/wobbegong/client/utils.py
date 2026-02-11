@@ -1,6 +1,8 @@
 import numpy as np
 from typing import Literal
 
+from .. import libwg
+
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
@@ -119,6 +121,9 @@ def read_string(path: str, start: int, length: int, compression: Literal["lz4", 
     data = read_chunk(path, start, length)
     return _parse_bytes(data, "string", compression=compression)
 
+def _decompress_cpp(data, compression):
+    return libwg.decompress(data, compression)
+
 
 def _decompress(data, compression):
     if compression == "lz4":
@@ -162,7 +167,7 @@ def read_sparse_row_values(
 
     # indices are delta encoded integers
     idx_bytes_raw = read_chunk(path, start + vlen, ilen)
-    idx_bytes = _decompress(idx_bytes_raw, compression)
+    idx_bytes = _decompress_cpp(idx_bytes_raw, compression)
     deltas = np.frombuffer(idx_bytes, dtype=np.int32)
     indices = np.cumsum(deltas)
 
@@ -209,7 +214,7 @@ def _parse_bytes(raw_bytes: bytes, dtype_str: str, compression: Literal["lz4", "
     Returns:
         Parsed data.
     """
-    decompressed = _decompress(raw_bytes, compression)
+    decompressed = _decompress_cpp(raw_bytes, compression)
 
     if dtype_str == "integer":
         return np.frombuffer(decompressed, dtype=np.int32)
