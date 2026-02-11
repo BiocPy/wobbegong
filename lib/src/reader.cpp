@@ -44,3 +44,7 @@ public:
         if (fd != -1) close(fd);
     }
 };
+
+PYBIND11_MODULE(lib_wobbegong, m) {
+    m.doc() = "Wobbegong high-performance C++ reader/writer bindings";
+}
