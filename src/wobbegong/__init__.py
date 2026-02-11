@@ -15,5 +15,6 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
+from . import lib_wobbegong as libwg
 from .core import wobbegongify
 from .client import load
