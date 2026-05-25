@@ -193,7 +193,9 @@ def reconstruct_sparse_row(vals: np.ndarray, indices: np.ndarray, ncols: int, dt
     return out
 
 
-def _parse_bytes(raw_bytes: bytes, dtype_str: str, compression: Literal["lz4", "zlib"] = "zlib") -> np.ndarray | list[str]:
+def _parse_bytes(
+    raw_bytes: bytes, dtype_str: str, compression: Literal["lz4", "zlib"] = "zlib"
+) -> np.ndarray | list[str]:
     """Parse raw bytes into numpy array or list of strings.
 
     Args:

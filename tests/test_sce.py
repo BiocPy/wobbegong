@@ -1,10 +1,8 @@
 import json
 import os
-import shutil
 
 import numpy as np
 import pytest
-from biocframe import BiocFrame
 from singlecellexperiment import SingleCellExperiment
 
 from wobbegong import wobbegongify

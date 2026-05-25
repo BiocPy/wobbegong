@@ -4,4 +4,4 @@
 
 - Initial implementation.
 - Support lz4 compression, in addition to zlib (default).
-- speed up Matrix `get_rows` for contiguous blocks and paramterize num_threads. 
+- speed up Matrix `get_rows` for contiguous blocks and paramterize num_threads.
