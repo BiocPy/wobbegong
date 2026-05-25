@@ -36,7 +36,7 @@ def wobbegongify_frame(x: BiocFrame, path: str, compression: Literal["lz4", "zli
         "byte_order": get_byte_order(),
         "row_count": x.shape[0],
         "has_row_names": x.row_names is not None,
-        "compression": compression
+        "compression": compression,
     }
 
     columns = []
